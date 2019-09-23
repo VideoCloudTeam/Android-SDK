@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -43,14 +44,19 @@ public class MainActivity extends AppCompatActivity {
     Button btnSetting;
     private final int REQUEST_PERMISSION = 1000;
     private final int OVERLAY_PERMISSION_REQ_CODE = 1001;
-    private final String SHITONG_URL = "line2.51vmr.cn";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        checkPermission();
+        new Handler().postDelayed(this::checkPermission, 1000);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @OnClick(R.id.btn_connect)
@@ -60,11 +66,9 @@ public class MainActivity extends AppCompatActivity {
         call.setNickname(etNickname.getText().toString());
         call.setChannel(etMeetNum.getText().toString());
         call.setPassword(etPassword.getText().toString());
-        if (SHITONG_URL.equals(tvAddress.getText().toString())) {
-            call.setShitongPlatform(true);
-        } else {
-            call.setShitongPlatform(false);
-        }
+        // 如果是视通平台设置为true，否则为false
+        call.setShitongPlatform(true);
+
         Intent intent = new Intent(this, ZJConferenceActivity.class);
         intent.putExtra("call", call);
         startActivity(intent);
