@@ -127,7 +127,7 @@ public class SettingActivity extends AppCompatActivity {
         sRecvStream.setChecked(preferences.isSimulcast());
         sSendStream.setChecked(preferences.isMultistream());
         sEnableH264Encoder.setChecked(preferences.isEnableH264HardwareEncoder());
-        sDisableH264Decoder.setChecked(preferences.isDisableH264hHardwareDecoder());
+        sDisableH264Decoder.setChecked(preferences.isDisableH264HardwareDecoder());
         sDisableCameraEncoder.setChecked(preferences.isDisableCameraEncoder());
         sPrintLogs.setChecked(preferences.isPrintLogs());
         switch (preferences.getSpeakerphone()) {
@@ -209,7 +209,7 @@ public class SettingActivity extends AppCompatActivity {
         preferences.setSimulcast(sRecvStream.isChecked());
         preferences.setMultistream(sSendStream.isChecked());
         preferences.setEnableH264HardwareEncoder(sEnableH264Encoder.isChecked());
-        preferences.setDisableH264hHardwareDecoder(sDisableH264Decoder.isChecked());
+        preferences.setDisableH264HardwareDecoder(sDisableH264Decoder.isChecked());
         preferences.setDisableCameraEncoder(sDisableCameraEncoder.isChecked());
         preferences.setPrintLogs(sPrintLogs.isChecked());
 

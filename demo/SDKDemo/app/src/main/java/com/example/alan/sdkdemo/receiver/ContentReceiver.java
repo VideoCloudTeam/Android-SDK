@@ -5,9 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.vcrtc.VCSevice;
+import com.vcrtc.registration.VCService;
 
-import static com.vcrtc.VCSevice.MSG;
+import static com.vcrtc.registration.VCService.MSG;
+
 
 /**
  * Created by ricardo
@@ -21,29 +22,29 @@ public class ContentReceiver extends BroadcastReceiver {
         String message = intent.getStringExtra(MSG);
         final String TAG = "ContentReceiver";
         switch (message){
-            case VCSevice.MSG_LOGIN_SUCCESS:
+            case VCService.MSG_LOGIN_SUCCESS:
                 Log.i(TAG, "登录成功");
                 break;
-            case VCSevice.MSG_LOGIN_FAILED:
-                String reason = intent.getStringExtra(VCSevice.DATA_BROADCAST);
+            case VCService.MSG_LOGIN_FAILED:
+                String reason = intent.getStringExtra(VCService.DATA_BROADCAST);
                 Log.i(TAG, "登录失败" + reason);
                 break;
-            case VCSevice.MSG_USER_INFO:
-                String userJson = intent.getStringExtra(VCSevice.DATA_BROADCAST);
+            case VCService.MSG_USER_INFO:
+                String userJson = intent.getStringExtra(VCService.DATA_BROADCAST);
                 Log.i(TAG, "用户信息" + userJson);
                 break;
-            case VCSevice.MSG_SESSION_ID:
-                String sessionID = intent.getStringExtra(VCSevice.DATA_BROADCAST);
+            case VCService.MSG_SESSION_ID:
+                String sessionID = intent.getStringExtra(VCService.DATA_BROADCAST);
                 Log.i(TAG, "sessionID:" + sessionID);
                 break;
-            case VCSevice.MSG_ONLINE_STATUS:
-                onLine = intent.getBooleanExtra(VCSevice.DATA_BROADCAST, false);
+            case VCService.MSG_ONLINE_STATUS:
+                onLine = intent.getBooleanExtra(VCService.DATA_BROADCAST, false);
                 Log.i(TAG, "在线状态:" + onLine);
                 break;
-            case VCSevice.MSG_LOGOUT:
+            case VCService.MSG_LOGOUT:
                 Log.i(TAG, "账号在别的端登录");
                 break;
-            case VCSevice.MSG_INCOMING:
+            case VCService.MSG_INCOMING:
                 if (onLine){
                     // 当前处于在线状态，可以去处理收到的消息
                     Log.i(TAG, "收到消息,当前在线");
@@ -52,7 +53,7 @@ public class ContentReceiver extends BroadcastReceiver {
                 }
 
                 break;
-            case VCSevice.MSG_INCOMING_CANCELLED:
+            case VCService.MSG_INCOMING_CANCELLED:
                 // 公有云会收到对方取消通话的消息
                 break;
             default:

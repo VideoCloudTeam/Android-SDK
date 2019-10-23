@@ -771,6 +771,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      */
     private void switchCamera() {
         if (localView != null) {
+            String [] devices = vcrtc.getCameraDevices();
             vcrtc.switchCamera();
             isFront = !isFront;
             localView.setMirror(isFront);

@@ -2,8 +2,10 @@ package com.example.alan.sdkdemo;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -44,19 +47,32 @@ public class MainActivity extends AppCompatActivity {
     Button btnSetting;
     private final int REQUEST_PERMISSION = 1000;
     private final int OVERLAY_PERMISSION_REQ_CODE = 1001;
-
+    AudioManager am;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
         new Handler().postDelayed(this::checkPermission, 1000);
+
+
+    }
+
+    private void switchAudio() {
+        am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        Log.d("---------------------", "switchAudio: "+ am.getMode());
+
+        am.setSpeakerphoneOn(false);
+        am.setMode(AudioManager.MODE_NORMAL);
+        Log.d("---------------------", "switchAudio: "+ am.getMode());
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        new Handler().postDelayed(this::switchAudio, 1000);
     }
 
     @OnClick(R.id.btn_connect)

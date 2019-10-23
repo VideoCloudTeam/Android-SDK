@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.sdkdemo.R;
+import com.example.alan.sdkdemo.widget.MIUtil;
 import com.qw.soul.permission.SoulPermission;
 import com.qw.soul.permission.bean.Permission;
 import com.qw.soul.permission.bean.Permissions;
@@ -555,7 +556,8 @@ public class ZJConferenceActivity extends AppCompatActivity {
         if (shareScreen && audioManager != null) {
             if (VCUtil.checkFloatPermission(this)) {
                 //开启悬浮按钮
-                VCWindowManager.createFloatButton(getApplicationContext(), ZJConferenceActivity.class);
+                VCWindowManager.createFloatButton(getApplicationContext(), ZJConferenceActivity.class, MIUtil.getSystem());
+
                 vcrtc.setVideoEnable(false, true);
             } else {
                 showToast(getString(R.string.no_system_alert_window_permission), Toast.LENGTH_SHORT);
@@ -682,8 +684,11 @@ public class ZJConferenceActivity extends AppCompatActivity {
      */
     private VCRTCListener listener = new VCRTCListenerImpl() {
 
+
+
         @Override
-        public void onConnected() {
+        public void onConnected(String uuid) {
+            super.onConnected(uuid);
             if (mediaCallBack != null) {
                 mediaCallBack.onConnect();
             }
@@ -863,7 +868,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
         public void onDisconnect(String reason) {
             if (isForeground) {
                 if (Locale.getDefault().getLanguage().equals("zh")) {
-                    Map<String, String> tipsMap = VCUtil.getTipsMessageMap(getApplicationContext());
+                    Map<String, String> tipsMap = VCUtil.getTipsMessageMap();
                     reason = tipsMap.get(reason);
                 }
                 showBeDisconnectedToast(reason);
@@ -876,7 +881,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
                 runOnUiThread(() -> {if (isForeground) showErrorDialog(getString(R.string.no_camera_found), getString(R.string.check_camera));});
             } else if (error.equals(ErrorCode.joinConferenceFailed)) {
                 if (Locale.getDefault().getLanguage().equals("zh")) {
-                    Map<String, String> tipsMap = VCUtil.getTipsMessageMap(getApplicationContext());
+                    Map<String, String> tipsMap = VCUtil.getTipsMessageMap();
                     if (!TextUtils.isEmpty(tipsMap.get(description)))
                         description = tipsMap.get(description);
                 }

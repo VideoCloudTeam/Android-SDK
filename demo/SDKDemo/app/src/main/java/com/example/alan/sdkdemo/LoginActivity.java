@@ -11,14 +11,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.vcrtc.VCSevice;
 import com.vcrtc.registration.VCRegistrationUtil;
+import com.vcrtc.registration.VCService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.vcrtc.VCSevice.VC_ACTION;
+import static com.vcrtc.registration.VCService.VC_ACTION;
+
 
 /**
  * A login screen that offers login via username/password.
@@ -62,13 +63,13 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra(VCSevice.MSG);
+            String message = intent.getStringExtra(VCService.MSG);
             switch (message) {
-                case VCSevice.MSG_LOGIN_SUCCESS:
+                case VCService.MSG_LOGIN_SUCCESS:
                     Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
                     finish();
                     break;
-                case VCSevice.MSG_LOGIN_FAILED:
+                case VCService.MSG_LOGIN_FAILED:
                     Toast.makeText(LoginActivity.this, "登录失败", Toast.LENGTH_SHORT).show();
                     break;
                 default:
