@@ -11,8 +11,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.ImageView;
 
-public class ZoomImageView extends View {
+public class ZoomImageView extends ImageView {
 
     private String TAG = "ZoomImageView";
 
@@ -158,6 +159,7 @@ public class ZoomImageView extends View {
     private int screenHeight;
 
 
+
     /**
      * ZoomImageView构造函数，将当前操作状态设为STATUS_INIT。
      *
@@ -179,11 +181,28 @@ public class ZoomImageView extends View {
         setBackgroundColor(Color.BLACK);
     }
 
+//    public ZoomImageView(Context context, AttributeSet attrs, ZoomViewPager pager) {
+//        super(context, attrs);
+//        currentStatus = STATUS_INIT;
+//
+//        ViewConfiguration configuration = ViewConfiguration.get(context);
+//        int touchSlop = configuration.getScaledTouchSlop();
+//        mTouchSlopSquare = touchSlop * touchSlop;
+//
+//        DisplayMetrics dm = getResources().getDisplayMetrics();
+//        screenHeight = dm.heightPixels;
+//        screenWidth = dm.widthPixels;
+//
+//        setBackgroundColor(Color.BLACK);
+//        parent = pager;
+//    }
+
     /**
      * 将待展示的图片设置进来。
      *
      * @param bitmap 待展示的Bitmap对象
      */
+    @Override
     public void setImageBitmap(Bitmap bitmap) {
         sourceBitmap = bitmap;
         currentStatus = STATUS_INIT;
@@ -206,6 +225,7 @@ public class ZoomImageView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         boolean result = false;
         switch (event.getActionMasked()) {
+
             case MotionEvent.ACTION_POINTER_DOWN:
                 if (event.getPointerCount() == 2) {
                     // 当有两个手指按在屏幕上时，计算两指之间的距离
@@ -244,6 +264,7 @@ public class ZoomImageView extends View {
                         lastYMove = yMove;
                         result = true;
                     }
+
                 } else if (event.getPointerCount() == 2) {
                     // 有两个手指按在屏幕上移动时，为缩放状态
                     centerPointBetweenFingers(event);

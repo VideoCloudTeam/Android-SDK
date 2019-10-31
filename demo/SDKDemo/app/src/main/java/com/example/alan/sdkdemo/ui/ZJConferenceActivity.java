@@ -895,6 +895,11 @@ public class ZJConferenceActivity extends AppCompatActivity {
             super.onWhiteboardReload(url, uuid);
             mediaCallBack.onWhiteBoardReload(url, uuid);
         }
+
+        @Override
+        public void onPresentaionShareState(boolean isSuccess, String reason) {
+            super.onPresentaionShareState(isSuccess, reason);
+        }
     };
 
     private MediaCallBack mediaCallBack;

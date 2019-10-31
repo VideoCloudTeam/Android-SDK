@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.alan.sdkdemo.widget.ZoomImageView;
+import com.example.alan.sdkdemo.widget.ZoomViewPager;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.webrtc.RTCManager;
 
@@ -24,11 +25,19 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     private Context context;
     private List<String> imagePaths;
+    private ZoomViewPager pager;
 
     public ViewPagerAdapter(Context context, List imagePaths) {
         this.context = context;
         this.imagePaths = imagePaths;
     }
+
+//    public ViewPagerAdapter(Context context, List imagePaths, ZoomViewPager pager) {
+//        this.context = context;
+//        this.imagePaths = imagePaths;
+//        this.pager = pager;
+//    }
+
 
     @Override
     public int getCount() {

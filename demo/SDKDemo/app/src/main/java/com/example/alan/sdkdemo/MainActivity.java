@@ -59,20 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void switchAudio() {
-        am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        Log.d("---------------------", "switchAudio: "+ am.getMode());
-
-        am.setSpeakerphoneOn(false);
-        am.setMode(AudioManager.MODE_NORMAL);
-        Log.d("---------------------", "switchAudio: "+ am.getMode());
-
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        new Handler().postDelayed(this::switchAudio, 1000);
     }
 
     @OnClick(R.id.btn_connect)
@@ -111,11 +100,13 @@ public class MainActivity extends AppCompatActivity {
         PackageManager pm = getPackageManager();
         String pkgName = this.getPackageName();
         boolean permission = (PackageManager.PERMISSION_GRANTED == pm.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, pkgName)
-                && PackageManager.PERMISSION_GRANTED == pm.checkPermission(Manifest.permission.READ_PHONE_STATE, pkgName));
+                && PackageManager.PERMISSION_GRANTED == pm.checkPermission(Manifest.permission.READ_PHONE_STATE, pkgName)
+                && PackageManager.PERMISSION_GRANTED == pm.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, pkgName));
         if (!permission) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_PHONE_STATE}, REQUEST_PERMISSION);
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {

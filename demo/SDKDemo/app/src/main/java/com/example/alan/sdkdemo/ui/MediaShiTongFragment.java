@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import com.example.alan.sdkdemo.R;
 import com.example.alan.sdkdemo.widget.ZoomFrameLayout;
+import com.example.alan.sdkdemo.widget.ZoomViewPager;
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
@@ -82,7 +83,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private TextView tvTime, tvChanel, tvBigName, tvPeopleNum, tvCallName;
     private LinearLayout llStats;
     private ImageView ivMuteAudio, ivMuteVideo, ivSwitchCamera, ivAudioMedol, ivShare, ivParticipants, ivMore, ivHangup, ivCircle, ivSignal, ivCloseVideo, ivAudioImg, ivCloseVideoBig, ivBigMute, ivCancel;
-    private ViewPager vpShare;
+    private ZoomViewPager vpShare;
     private PopupWindow popupWindowShare, popupWindowMore, popupWindowStats;
 
     private FrameLayout.LayoutParams bigLayoutParams;
@@ -1029,7 +1030,11 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      * 停止双流
      */
     private void stopPresentation() {
-        vcrtc.stopPresentation();
+        try {
+            vcrtc.stopPresentation();
+        }catch (Exception e){
+            System.out.print("+++++");
+        }
         vcrtc.updateClayout("1:4");
         vpShare.setVisibility(View.GONE);
         rlShareScreen.setVisibility(View.GONE);

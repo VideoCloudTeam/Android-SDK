@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.btn_login)
     Button btnLogin;
     LoginReceiver receiver = new LoginReceiver();
+    AudioManager am;
 
     // UI references.
     @Override
@@ -58,6 +61,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
     public class LoginReceiver extends BroadcastReceiver {
 
@@ -82,5 +89,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onDestroy();
         unregisterReceiver(receiver);
     }
+
 }
 

@@ -2,6 +2,8 @@ package com.example.alan.sdkdemo;
 
 import android.app.Application;
 
+import com.vcrtc.VCRTCPreferences;
+import com.vcrtc.utils.LogUtil;
 import com.vcrtc.webrtc.RTCManager;
 
 /**
@@ -15,5 +17,10 @@ public class MyApplication extends Application {
         RTCManager.init(this);
         RTCManager.DEVICE_TYPE = "Android";
         RTCManager.OEM = "";
+        VCRTCPreferences prefs = new VCRTCPreferences(this);
+        prefs.setPrintLogs(true);
+
+        LogUtil.startWriteLog(this);
+
     }
 }
