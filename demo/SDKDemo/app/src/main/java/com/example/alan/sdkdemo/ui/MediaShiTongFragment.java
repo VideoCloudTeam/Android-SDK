@@ -177,7 +177,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         vpShare = rootView.findViewById(R.id.vp_share);
 
         ivAudioMedol.setVisibility(View.VISIBLE);
-
         rlUnStick.setOnClickListener(this);
         llStats.setOnClickListener(this);
         ivMuteAudio.setOnClickListener(this);

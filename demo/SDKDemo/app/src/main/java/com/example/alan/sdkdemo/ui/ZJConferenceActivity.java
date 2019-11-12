@@ -75,18 +75,28 @@ public class ZJConferenceActivity extends AppCompatActivity {
     static boolean allowRecordAudio, allowCamera;
 
     static Map<String, Participant> participants;
-    /** 是否说话列表**/
+    /**
+     * 是否说话列表
+     **/
     static List<Stage> vadStage;
 
     private VCAudioManager audioManager;
     private VCAudioManager.AudioDevice audioDevice;
-    /** home键监听 **/
+    /**
+     * home键监听
+     **/
     private VCHomeListener homeListener;
-    /** 锁屏监听**/
+    /**
+     * 锁屏监听
+     **/
     private VCScreenListener screenListener;
-    /** 来电监听**/
+    /**
+     * 来电监听
+     **/
     private VCPhoneListener phoneListener;
-    /** 网络监听 **/
+    /**
+     * 网络监听
+     **/
     private VCNetworkListener networkListener;
 
     private Timer noNetworkTimer;
@@ -95,6 +105,29 @@ public class ZJConferenceActivity extends AppCompatActivity {
     public Bitmap closeVideoBitmap, audioModelBitmap;
 
     static boolean isTurnOn;
+
+    /**
+     * if (RTCManager.isIsShitongPlatform()) {
+     * // 专属云平台
+     * if (!mediaShiTongFragment.isMuteAudio) {
+     * vcrtc.setAudioEnable(enable);
+     * }
+     * } else {
+     * // 公有云平台
+     * if (prefs.isSimulcast()) {
+     * // 转发模式
+     * if (mediaSimulcastFragment != null && !mediaSimulcastFragment.isMuteAudio) {
+     * vcrtc.setAudioEnable(enable);
+     * }
+     * } else {
+     * // 全编全解
+     * if (!mediaFragment.isMuteAudio) {
+     * vcrtc.setAudioEnable(enable);
+     * }
+     * }
+     * }
+     */
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,17 +138,17 @@ public class ZJConferenceActivity extends AppCompatActivity {
         call = (Call) getIntent().getSerializableExtra("call");
         joinMuteAudio = getIntent().getBooleanExtra("muteAudio", false);
         if (call == null) {
-            Toast.makeText(getApplicationContext(),"请设置呼叫参数call不能为null",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "请设置呼叫参数call不能为null", Toast.LENGTH_SHORT).show();
             finish();
             return;
         } else {
             if (call.getNickname() == null || "".equals(call.getNickname())) {
-                Toast.makeText(getApplicationContext(), "请设置显示名称",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "请设置显示名称", Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
             if (call.getChannel() == null || "".equals(call.getChannel())) {
-                Toast.makeText(getApplicationContext(), "请设置呼叫地址",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "请设置呼叫地址", Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
@@ -166,17 +199,20 @@ public class ZJConferenceActivity extends AppCompatActivity {
     /**
      * 初始化监听器
      */
-    private void initListener(){
+    private void initListener() {
         homeListener = new VCHomeListener(getApplicationContext());
         homeListener.setKeyListener(new VCHomeListener.KeyListener() {
             @Override
             public void home() {
                 if (RTCManager.isIsShitongPlatform()) {
+                    // isShitongplatform true 专属云平台
                     if (!mediaShiTongFragment.isMuteVideo && !mediaShiTongFragment.isAudioModel) {
                         vcrtc.updateVideoImage(closeVideoBitmap);
                         vcrtc.setVideoEnable(false, true);
                     }
                 } else {
+
+                    // false 公有云平台
                     vcrtc.updateVideoImage(closeVideoBitmap);
                     // 判断是否是转发模式 true为转发模式 false全编全解
                     if (prefs.isSimulcast()) {
@@ -280,19 +316,24 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     /**
      * 静音
+     *
      * @param enable
      */
     private void muteAudio(boolean enable) {
         if (RTCManager.isIsShitongPlatform()) {
+            // 专属云平台
             if (!mediaShiTongFragment.isMuteAudio) {
                 vcrtc.setAudioEnable(enable);
             }
         } else {
+            // 公有云平台
             if (prefs.isSimulcast()) {
+                // 转发模式
                 if (mediaSimulcastFragment != null && !mediaSimulcastFragment.isMuteAudio) {
                     vcrtc.setAudioEnable(enable);
                 }
             } else {
+                // 全编全解
                 if (!mediaFragment.isMuteAudio) {
                     vcrtc.setAudioEnable(enable);
                 }
@@ -302,6 +343,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     /**
      * 禁止摄像头
+     *
      * @param enable
      */
     private void muteVideo(boolean enable) {
@@ -353,6 +395,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     /**
      * 呼叫
+     *
      * @param callType 呼叫类型，具体可参考api说明文档
      */
     private void makeCall(VCRTC.CallType callType) {
@@ -394,7 +437,10 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
             @Override
             public void failure(String reason) {
-                runOnUiThread(() -> {if (isForeground) showErrorDialog(getString(R.string.call_failed), getString(R.string.can_not_connect_server));});
+                runOnUiThread(() -> {
+                    if (isForeground)
+                        showErrorDialog(getString(R.string.call_failed), getString(R.string.can_not_connect_server));
+                });
             }
 
         });
@@ -405,33 +451,33 @@ public class ZJConferenceActivity extends AppCompatActivity {
      */
     public void checkPermission() {
         SoulPermission.getInstance().checkAndRequestPermissions(
-                        Permissions.build(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA),
-                        new CheckRequestPermissionsListener() {
-                            @Override
-                            public void onAllPermissionOk(Permission[] allPermissions) {
-                                allowRecordAudio = true;
-                                allowCamera = true;
-                                makeCall(VCRTC.CallType.video);
-                            }
+                Permissions.build(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA),
+                new CheckRequestPermissionsListener() {
+                    @Override
+                    public void onAllPermissionOk(Permission[] allPermissions) {
+                        allowRecordAudio = true;
+                        allowCamera = true;
+                        makeCall(VCRTC.CallType.video);
+                    }
 
-                            @Override
-                            public void onPermissionDenied(Permission[] refusedPermissions) {
-                                if (refusedPermissions.length == 2) {
-                                    makeCall(VCRTC.CallType.recvAndSendBitmap);
-                                } else {
-                                    for (int i = 0; i < refusedPermissions.length; i++) {
-                                        if (refusedPermissions[i].permissionName.equals(Manifest.permission.RECORD_AUDIO)) {
-                                            allowCamera = true;
-                                            makeCall(VCRTC.CallType.recvAndSendVideo);
-                                        }
-                                        if (refusedPermissions[i].permissionName.equals(Manifest.permission.CAMERA)) {
-                                            allowRecordAudio = true;
-                                            makeCall(VCRTC.CallType.recvAndSendAudioBitmap);
-                                        }
-                                    }
+                    @Override
+                    public void onPermissionDenied(Permission[] refusedPermissions) {
+                        if (refusedPermissions.length == 2) {
+                            makeCall(VCRTC.CallType.recvAndSendBitmap);
+                        } else {
+                            for (int i = 0; i < refusedPermissions.length; i++) {
+                                if (refusedPermissions[i].permissionName.equals(Manifest.permission.RECORD_AUDIO)) {
+                                    allowCamera = true;
+                                    makeCall(VCRTC.CallType.recvAndSendVideo);
+                                }
+                                if (refusedPermissions[i].permissionName.equals(Manifest.permission.CAMERA)) {
+                                    allowRecordAudio = true;
+                                    makeCall(VCRTC.CallType.recvAndSendAudioBitmap);
                                 }
                             }
-                        });
+                        }
+                    }
+                });
     }
 
     /**
@@ -474,6 +520,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     /**
      * 屏幕共享返回时调用
+     *
      * @param intent
      */
     @Override
@@ -590,6 +637,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     /**
      * 监听返回键，弹出提示dialog
+     *
      * @param keyCode
      * @param event
      * @return
@@ -683,7 +731,6 @@ public class ZJConferenceActivity extends AppCompatActivity {
      * 信息回调监听，具体可参照文档
      */
     private VCRTCListener listener = new VCRTCListenerImpl() {
-
 
 
         @Override
@@ -878,7 +925,10 @@ public class ZJConferenceActivity extends AppCompatActivity {
         @Override
         public void onError(ErrorCode error, String description) {
             if (error.equals(ErrorCode.noCameraFound)) {
-                runOnUiThread(() -> {if (isForeground) showErrorDialog(getString(R.string.no_camera_found), getString(R.string.check_camera));});
+                runOnUiThread(() -> {
+                    if (isForeground)
+                        showErrorDialog(getString(R.string.no_camera_found), getString(R.string.check_camera));
+                });
             } else if (error.equals(ErrorCode.joinConferenceFailed)) {
                 if (Locale.getDefault().getLanguage().equals("zh")) {
                     Map<String, String> tipsMap = VCUtil.getTipsMessageMap();
@@ -915,32 +965,55 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     public interface MediaCallBack {
         void onLocalVideo(String uuid, VCRTCView view);
+
         void onRemoteVideo(String uuid, VCRTCView view);
+
         void onLocalStream(String uuid, String streamURL);
+
         void onAddView(String uuid, VCRTCView view, String viewType);
+
         void onRemoveView(String uuid, VCRTCView view);
+
         void onRemoteStream(String uuid, String streamURL, String streamType);
+
         void onAddParticipant(Participant participant);
+
         void onUpdateParticipant(Participant participant);
+
         void onRemoveParticipant(String uuid);
+
         void onLayoutUpdate(String layout, String hostLayout, String guestLayout);
+
         void onLayoutUpdateParticipants(List<String> participants);
+
         void onPresentation(boolean isActive, String uuid);
+
         void onPresentationReload(String url);
+
         void onScreenShareState(boolean isActive);
+
         void onRecordState(boolean isActive);
+
         void onLiveState(boolean isActive);
+
         void onRoleUpdate(String role);
+
         void onConnect();
+
         void onCallConnect();
+
         void onWhiteBoardReload(String url, String uuid);
     }
 
     public interface ConferenceCallBack {
         void onAddParticipant(Participant participant);
+
         void onUpdateParticipant(Participant participant);
+
         void onRemoveParticipant(String uuid);
+
         void onStageVoice(List<Stage> stages);
+
         void onConferenceUpdate(ConferenceStatus status);
     }
 }
