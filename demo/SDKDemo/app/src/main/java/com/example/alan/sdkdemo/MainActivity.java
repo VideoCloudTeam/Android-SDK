@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         call.setChannel(etMeetNum.getText().toString());
         call.setPassword(etPassword.getText().toString());
         // 如果是视通平台设置为true，否则为false
-        call.setShitongPlatform(true);
+        call.setShitongPlatform(false);
 
         Intent intent = new Intent(this, ZJConferenceActivity.class);
         intent.putExtra("call", call);
