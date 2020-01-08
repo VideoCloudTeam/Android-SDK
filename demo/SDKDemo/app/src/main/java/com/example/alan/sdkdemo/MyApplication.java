@@ -2,6 +2,7 @@ package com.example.alan.sdkdemo;
 
 import android.app.Application;
 
+import com.tencent.bugly.crashreport.CrashReport;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.utils.LogUtil;
 import com.vcrtc.webrtc.RTCManager;
@@ -19,8 +20,9 @@ public class MyApplication extends Application {
         RTCManager.OEM = "";
         VCRTCPreferences prefs = new VCRTCPreferences(this);
         prefs.setPrintLogs(true);
-
         LogUtil.startWriteLog(this);
+        CrashReport.initCrashReport(getApplicationContext(), "941e592e23", true);
+
 
     }
 }

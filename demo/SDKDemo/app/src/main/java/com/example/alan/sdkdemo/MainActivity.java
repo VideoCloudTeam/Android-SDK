@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
+import com.tencent.bugly.crashreport.CrashReport;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.entities.Call;
 import com.vcrtc.utils.OkHttpUtil;
@@ -67,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         call = new Call();
         new Handler().postDelayed(this::checkPermission, 1000);
-
 
     }
 
