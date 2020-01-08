@@ -19,7 +19,7 @@
             android:gravity="center"/>
         <EditText
             android:id="@+id/tv_address"
-            android:text="line2.51vmr.cn"
+            android:text=""
             android:layout_width="0dp"
             android:gravity="center"
             android:layout_height="match_parent"
@@ -60,7 +60,7 @@
         <EditText
             android:id="@+id/et_meet_num"
             android:layout_width="0dp"
-            android:text="8006738"
+            android:text=""
             android:layout_height="match_parent"
             android:layout_weight="3"/>
     </LinearLayout>
@@ -77,7 +77,7 @@
             android:textSize="16sp"
             android:gravity="center"/>
         <EditText
-            android:text="6738"
+            android:text=""
             android:id="@+id/et_password"
             android:layout_width="0dp"
             android:layout_height="match_parent"
