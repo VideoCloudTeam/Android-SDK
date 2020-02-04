@@ -709,6 +709,17 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 });
     }
 
+    Handler handlerVideo = new Handler();
+    Runnable runnableVideo = new Runnable() {
+        @Override
+        public void run() {
+            ivCloseVideo.setVisibility(View.GONE);
+            if (me.isBig() || peoples.size() == 0) {
+                ivCloseVideoBig.setVisibility(View.GONE);
+            }
+        }
+    };
+
     private void toggleMuteVideo() {
         if (!ZJConferenceActivity.allowCamera) {
             checkCameraPermission();
@@ -719,15 +730,13 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         ivMuteVideo.setSelected(!isMuteVideo);
         isMuteVideo = !isMuteVideo;
         if (isMuteVideo) {
+            handlerVideo.removeCallbacks(runnableVideo);
             ivCloseVideo.setVisibility(View.VISIBLE);
             if (me.isBig() || peoples.size() == 0) {
                 ivCloseVideoBig.setVisibility(View.VISIBLE);
             }
         } else {
-            ivCloseVideo.setVisibility(View.GONE);
-            if (me.isBig() || peoples.size() == 0) {
-                ivCloseVideoBig.setVisibility(View.GONE);
-            }
+            handlerVideo.postDelayed(runnableVideo, 700);
         }
     }
 
@@ -1022,7 +1031,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      */
     private void sendSharePicture() {
         Bitmap bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
-        vcrtc.sendPresentationBitmap(bitmap);
+        vcrtc.sendPresentationBitmap(bitmap, true);
     }
 
     /**

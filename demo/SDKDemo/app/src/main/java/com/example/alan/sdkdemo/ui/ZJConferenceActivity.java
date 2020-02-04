@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -50,6 +51,8 @@ import com.vcrtc.webrtc.RTCManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -191,9 +194,17 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-        closeVideoBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.img_close_video, options);
-        audioModelBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.img_audio_model, options);
+        AssetManager manager = getAssets();
+        InputStream novideo = null;
+        InputStream audioModel = null;
+        try {
+            novideo = manager.open("novideo.png");
+            audioModel = manager.open("img_audio_model.png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        closeVideoBitmap = BitmapFactory.decodeStream(novideo);
+        audioModelBitmap = BitmapFactory.decodeStream(audioModel);
     }
 
     /**

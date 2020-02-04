@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.btn_connect)
     public void onClick() {
         checkUrl(tvAddress.getText().toString());
+//        goToConference();
     }
 
     private void goToConference(){
@@ -167,10 +168,11 @@ public class MainActivity extends AppCompatActivity {
 
         String httpUrl = String.format("https://%s/api/v3/app/getPlatform", url);
         try {
+
             OkHttpUtil.doGet(httpUrl, new Callback() {
                 @Override
                 public void onFailure(okhttp3.Call call, IOException e) {
-                    displayMessage("fail");
+                    runOnUiThread(() -> displayMessage("fail"));
                 }
 
                 @Override
@@ -207,7 +209,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void displayMessage(String message){
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
 
 }
