@@ -11,9 +11,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -165,6 +167,35 @@ public class ZJConferenceActivity extends AppCompatActivity {
         checkPermission();
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (audioManager != null) {
+            if (audioDevice.equals(VCAudioManager.AudioDevice.BLUETOOTH)) {
+                Log.d("audioManager", "bluetooth: ");
+                AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+                audioManager.startBluetoothSco();
+                audioManager.setBluetoothScoOn(true);
+                audioManager.setSpeakerphoneOn(false);
+            } else {
+                Log.d("audioManager", "onIdle: " + audioDevice);
+                if (audioManager != null) {
+                    audioManager.selectAudioDevice(audioDevice);
+                    new Handler().postDelayed(() -> {
+                                if (audioManager != null) {
+                                    audioManager.updateAudioDeviceState();
+                                }
+                            }
+                            , 2000);
+
+                }
+
+            }
+
+        }
+    }
+
     private void initData() {
         vcrtc = new VCRTC(this);
         prefs = new VCRTCPreferences(this);
@@ -299,12 +330,18 @@ public class ZJConferenceActivity extends AppCompatActivity {
                         audioManager.selectAudioDevice(audioDevice);
                     }
                 }
+                if (vcrtc != null) {
+                    vcrtc.setRemoteAudioEnable(true);
+                }
                 muteAudio(true);
                 muteVideo(true);
             }
 
             @Override
             public void onOffhook() {
+                if (vcrtc != null) {
+                    vcrtc.setRemoteAudioEnable(false);
+                }
                 muteAudio(false);
                 muteVideo(false);
             }

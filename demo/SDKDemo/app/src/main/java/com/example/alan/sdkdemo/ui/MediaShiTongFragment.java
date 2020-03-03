@@ -21,6 +21,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,6 +59,11 @@ import com.vcrtc.entities.StatsItemBean;
 import com.vcrtc.listeners.DoubleClickListener;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.VCUtil;
+
+import org.webrtc.Camera1Enumerator;
+import org.webrtc.Camera2Enumerator;
+import org.webrtc.CameraEnumerationAndroid;
+import org.webrtc.CameraEnumerator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -780,14 +786,40 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      */
     private void switchCamera() {
         if (localView != null) {
-            String [] devices = vcrtc.getCameraDevices();
-            vcrtc.switchCamera();
+            if (isFront){
+                vcrtc.switchCamera(checkCamera(false));
+            }else {
+                vcrtc.switchCamera(checkCamera(true));
+            }
+
+//            vcrtc.switchCamera();
             isFront = !isFront;
             localView.setMirror(isFront);
             if ((stickUUID != null && stickUUID.equals(me.getUuid())) || peoples.size() <= 0) {
                 bigView.setMirror(isFront);
             }
         }
+    }
+
+    private String checkCamera(boolean selectFront){
+        CameraEnumerator cameraEnumerator;
+        if (Camera2Enumerator.isSupported(getActivity())) {
+            cameraEnumerator = new Camera2Enumerator(getActivity());
+        } else {
+            cameraEnumerator = new Camera1Enumerator();
+        }
+
+        String[] devicesName = cameraEnumerator.getDeviceNames();
+        for (int i = 0; i < devicesName.length; i++){
+            if (selectFront && cameraEnumerator.isFrontFacing(devicesName[i])){
+                return devicesName[i];
+            }
+            if (!selectFront && cameraEnumerator.isBackFacing(devicesName[i])){
+                return devicesName[i];
+            }
+
+        }
+        return "";
     }
 
     private void toggleAudioModel() {
