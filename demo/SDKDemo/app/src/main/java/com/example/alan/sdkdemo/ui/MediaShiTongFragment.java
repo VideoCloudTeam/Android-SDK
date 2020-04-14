@@ -803,13 +803,14 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
     private String checkCamera(boolean selectFront){
         CameraEnumerator cameraEnumerator;
-        if (Camera2Enumerator.isSupported(getActivity())) {
-            cameraEnumerator = new Camera2Enumerator(getActivity());
+        if (Camera2Enumerator.isSupported(mActivity)) {
+            cameraEnumerator = new Camera2Enumerator(mActivity);
         } else {
             cameraEnumerator = new Camera1Enumerator();
         }
 
         String[] devicesName = cameraEnumerator.getDeviceNames();
+        Log.d("checkCamera", "checkCamera: ");
         for (int i = 0; i < devicesName.length; i++){
             if (selectFront && cameraEnumerator.isFrontFacing(devicesName[i])){
                 return devicesName[i];

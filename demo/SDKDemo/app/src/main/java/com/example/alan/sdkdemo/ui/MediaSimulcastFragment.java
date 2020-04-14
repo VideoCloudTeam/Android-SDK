@@ -3,6 +3,7 @@ package com.example.alan.sdkdemo.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -17,6 +18,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +57,10 @@ import com.vcrtc.listeners.DoubleClickListener;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.utils.VCUtil;
+
+import org.webrtc.Camera1Enumerator;
+import org.webrtc.Camera2Enumerator;
+import org.webrtc.CameraEnumerator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -119,6 +125,19 @@ public class MediaSimulcastFragment extends android.app.Fragment implements View
     private BitmapUtil bitmapUtil;
     private ImageView ivWebClose;
     private boolean isWhiteB = false;
+    private Activity mActivity;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mActivity = (Activity) context;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mActivity = activity;
+    }
 
     @Nullable
     @Override
@@ -776,13 +795,40 @@ public class MediaSimulcastFragment extends android.app.Fragment implements View
 
     private void switchCamera() {
         if (localView != null) {
-            vcrtc.switchCamera();
+            if (isFront){
+                vcrtc.switchCamera(checkCamera(false));
+            }else {
+                vcrtc.switchCamera(checkCamera(true));
+            }
+//            vcrtc.switchCamera();
             isFront = !isFront;
             localView.setMirror(isFront);
             if ((stickUUID != null && stickUUID.equals(me.getUuid())) || peoples.size() <= 0) {
                 bigView.setMirror(isFront);
             }
         }
+    }
+
+    private String checkCamera(boolean selectFront){
+        CameraEnumerator cameraEnumerator;
+        if (Camera2Enumerator.isSupported(mActivity)) {
+            cameraEnumerator = new Camera2Enumerator(mActivity);
+        } else {
+            cameraEnumerator = new Camera1Enumerator();
+        }
+
+        String[] devicesName = cameraEnumerator.getDeviceNames();
+        Log.d("checkCamera", "checkCamera: ");
+        for (int i = 0; i < devicesName.length; i++){
+            if (selectFront && cameraEnumerator.isFrontFacing(devicesName[i])){
+                return devicesName[i];
+            }
+            if (!selectFront && cameraEnumerator.isBackFacing(devicesName[i])){
+                return devicesName[i];
+            }
+
+        }
+        return "";
     }
 
     public void toggleShare() {
