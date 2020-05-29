@@ -991,13 +991,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         releaseDurationTimer();
         releaseStatsTimer();
 
-        if (localView != null) {
-            localView.release();
-        }
-        if (bigView != null) {
-            bigView.release();
-        }
-
         llSmallVideo.removeAllViews();
         flBigVideo.removeAllViews();
 
@@ -1301,11 +1294,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 toggleMuteAudio();
                 ZJConferenceActivity.joinMuteAudio = false;
             }
-        }
-
-        @Override
-        public void onWhiteBoardReload(String url, String uuid) {
-
         }
 
         @Override

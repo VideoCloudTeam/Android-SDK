@@ -917,13 +917,6 @@ public class MediaSimulcastFragment extends android.app.Fragment implements View
         releaseDurationTimer();
         releaseStatsTimer();
 
-        if (localView != null) {
-            localView.release();
-        }
-        if (bigView != null) {
-            bigView.release();
-        }
-
         llSmallVideo.removeAllViews();
         flBigVideo.removeAllViews();
 
@@ -1489,12 +1482,7 @@ public class MediaSimulcastFragment extends android.app.Fragment implements View
             }
         }
 
-        @Override
-        public void onWhiteBoardReload(String url, String uuid) {
-
-        }
     };
-
 
 }
 

@@ -2,47 +2,32 @@ package com.example.alan.sdkdemo;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
-import com.tencent.bugly.crashreport.CrashReport;
 import com.vcrtc.VCRTCPreferences;
+import com.vcrtc.callbacks.CallBack;
 import com.vcrtc.entities.Call;
-import com.vcrtc.utils.OkHttpUtil;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,15 +45,17 @@ public class MainActivity extends AppCompatActivity {
     Button btnSetting;
     private final int REQUEST_PERMISSION = 1000;
     private final int OVERLAY_PERMISSION_REQ_CODE = 1001;
+    private VCRTCPreferences vcPrefs;
+
     Call call;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        vcPrefs = new VCRTCPreferences(getApplicationContext());
         call = new Call();
         new Handler().postDelayed(this::checkPermission, 1000);
-
     }
 
     @Override
@@ -79,11 +66,9 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.btn_connect)
     public void onClick() {
         checkUrl(tvAddress.getText().toString());
-//        goToConference();
     }
 
-    private void goToConference(){
-        call.setApiServer(tvAddress.getText().toString());
+    private void goToConference() {
         call.setNickname(etNickname.getText().toString());
         call.setChannel(etMeetNum.getText().toString());
         call.setPassword(etPassword.getText().toString());
@@ -166,46 +151,19 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        String httpUrl = String.format("https://%s/api/v3/app/getPlatform", url);
-        try {
+        vcPrefs.setServerAddress(url, "443", new CallBack() {
+            @Override
+            public void success(String s) {
+                handler.post(() -> {
+                    goToConference();
+                });
+            }
 
-            OkHttpUtil.doGet(httpUrl, new Callback() {
-                @Override
-                public void onFailure(okhttp3.Call call, IOException e) {
-                    runOnUiThread(() -> displayMessage("fail"));
-                }
-
-                @Override
-                public void onResponse(okhttp3.Call c, Response response) throws IOException {
-                    String resultJson = response.body().string();
-                    try {
-                        JSONObject result = new JSONObject(resultJson);
-                        if (result.optInt("code") == 200) {
-                            String dataJson = result.optString("data");
-                            JSONObject data = new JSONObject(dataJson);
-                            String platform = data.optString("platform");
-                            if ("shitong".equals(platform)) {
-                                call.setShitongPlatform(true);
-                            } else if ("yunshi".equals(platform)) {
-                                call.setShitongPlatform(false);
-                            }
-                            handler.post(() -> {
-                                goToConference();
-                            });
-                        } else {
-                            displayMessage("fail");
-
-                        }
-                    } catch (JSONException e) {
-                        displayMessage("fail");
-
-                    }
-                }
-            });
-        } catch (Exception e) {
-            displayMessage("fail");
-
-        }
+            @Override
+            public void failure(String s) {
+                displayMessage(s);
+            }
+        });
     }
 
     private void displayMessage(String message){
