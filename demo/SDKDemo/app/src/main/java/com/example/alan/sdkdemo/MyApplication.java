@@ -33,7 +33,7 @@ public class MyApplication extends Application {
         copyCloseVideoImageFromRaw(prefs);
 
         prefs.setPrintLogs(true);
-        LogUtil.startWriteLog(this);
+        LogUtil.startWriteLog(this, false);
 
         RTCManager.init(this);
         RTCManager.DEVICE_TYPE = "Android";

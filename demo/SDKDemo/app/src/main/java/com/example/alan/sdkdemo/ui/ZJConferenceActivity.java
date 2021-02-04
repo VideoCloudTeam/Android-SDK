@@ -988,15 +988,10 @@ public class ZJConferenceActivity extends AppCompatActivity {
             }
         }
 
-        @Override
-        public void onWhiteboardReload(String url, String uuid) {
-            super.onWhiteboardReload(url, uuid);
-            mediaCallBack.onWhiteBoardReload(url, uuid);
-        }
 
         @Override
-        public void onPresentaionShareState(boolean isSuccess, String reason) {
-            super.onPresentaionShareState(isSuccess, reason);
+        public void onPresentationShareState(boolean isSuccess, String reason) {
+            super.onPresentationShareState(isSuccess, reason);
         }
     };
 
