@@ -937,13 +937,6 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         releaseDurationTimer();
         releaseStatsTimer();
 
-        if (localView != null) {
-            localView.release();
-        }
-        if (remoteView != null) {
-            remoteView.release();
-        }
-
         flLocalVideo.removeAllViews();
         flRemoteVideo.removeAllViews();
 
@@ -1067,12 +1060,6 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
                 ZJConferenceActivity.joinMuteAudio = false;
             }
         }
-
-        @Override
-        public void onWhiteBoardReload(String url, String uuid) {
-
-        }
-
 
         @Override
         public void onLocalVideo(String uuid, VCRTCView view) {

@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -78,6 +77,10 @@ public class LoginActivity extends AppCompatActivity {
                     break;
                 case VCService.MSG_LOGIN_FAILED:
                     Toast.makeText(LoginActivity.this, "登录失败", Toast.LENGTH_SHORT).show();
+                    break;
+                case VCService.MSG_USER_INFO:
+                    //用户信息
+                    String userJson = intent.getStringExtra(VCService.DATA_BROADCAST);
                     break;
                 default:
             }

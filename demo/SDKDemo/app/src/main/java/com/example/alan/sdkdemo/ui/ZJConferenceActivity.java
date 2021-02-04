@@ -992,9 +992,13 @@ public class ZJConferenceActivity extends AppCompatActivity {
         @Override
         public void onPresentationShareState(boolean isSuccess, String reason) {
             super.onPresentationShareState(isSuccess, reason);
-        }
-    };
 
+        }
+
+        ;
+
+
+    };
     private MediaCallBack mediaCallBack;
     private ConferenceCallBack conferenceCallBack;
 
@@ -1005,7 +1009,6 @@ public class ZJConferenceActivity extends AppCompatActivity {
     public void setConferenceCallBack(ConferenceCallBack conferenceCallBack) {
         this.conferenceCallBack = conferenceCallBack;
     }
-
     public interface MediaCallBack {
         void onLocalVideo(String uuid, VCRTCView view);
 
@@ -1044,8 +1047,6 @@ public class ZJConferenceActivity extends AppCompatActivity {
         void onConnect();
 
         void onCallConnect();
-
-        void onWhiteBoardReload(String url, String uuid);
     }
 
     public interface ConferenceCallBack {
