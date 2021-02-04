@@ -229,7 +229,7 @@ public class SettingActivity extends AppCompatActivity {
     }
 
     public void check(View view) {
-        preferences.setServerAddress(etApiServer.getText().toString(), new CallBack() {
+        preferences.setServerAddress(etApiServer.getText().toString(), "443", new CallBack() {
             @Override
             public void success(String message) {
                 runOnUiThread(() -> {
@@ -244,5 +244,6 @@ public class SettingActivity extends AppCompatActivity {
                 });
             }
         });
+//        preferences.setServerAddress(etApiServer.getText().toString(), );
     }
 }
