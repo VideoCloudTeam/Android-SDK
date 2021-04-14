@@ -29,6 +29,18 @@ public class MyApplication extends Application {
 
 
         VCRTCPreferences prefs = new VCRTCPreferences(this);
+
+        // rtsp
+//        prefs.setCaptureVideoFps(34);
+//        prefs.setCameraVideoFps(30);
+//        prefs.setVideoFps(30);
+//        prefs.setMaxVideoFps(30);
+//        prefs.setDisableFrameDropper(true);
+//        prefs.setCameraVideoSize(1920, 1080);
+//        prefs.setRtspEncoder(true);
+//        prefs.setRtspURL("");
+
+
         //复制关闭摄像头的图片到手机
         copyCloseVideoImageFromRaw(prefs);
 
