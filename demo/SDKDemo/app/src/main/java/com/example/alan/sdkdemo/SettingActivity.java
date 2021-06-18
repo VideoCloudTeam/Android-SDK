@@ -128,7 +128,7 @@ public class SettingActivity extends AppCompatActivity {
         sSendStream.setChecked(preferences.isMultistream());
         sEnableH264Encoder.setChecked(preferences.isEnableH264HardwareEncoder());
         sDisableH264Decoder.setChecked(preferences.isDisableH264HardwareDecoder());
-        sDisableCameraEncoder.setChecked(preferences.isDisableCameraEncoder());
+//        sDisableCameraEncoder.setChecked(preferences.isDisableCameraEncoder());
         sPrintLogs.setChecked(preferences.isPrintLogs());
         switch (preferences.getSpeakerphone()) {
             case "auto":
@@ -210,7 +210,7 @@ public class SettingActivity extends AppCompatActivity {
         preferences.setMultistream(sSendStream.isChecked());
         preferences.setEnableH264HardwareEncoder(sEnableH264Encoder.isChecked());
         preferences.setDisableH264HardwareDecoder(sDisableH264Decoder.isChecked());
-        preferences.setDisableCameraEncoder(sDisableCameraEncoder.isChecked());
+//        preferences.setDisableCameraEncoder(sDisableCameraEncoder.isChecked());
         preferences.setPrintLogs(sPrintLogs.isChecked());
 
         String speakerphone = "auto";
