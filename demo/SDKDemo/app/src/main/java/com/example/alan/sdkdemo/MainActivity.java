@@ -8,12 +8,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,10 +26,18 @@ import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;
 import com.vcrtc.entities.Call;
+import com.vcrtc.utils.OkHttpUtil;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,8 +56,12 @@ public class MainActivity extends AppCompatActivity {
     private final int REQUEST_PERMISSION = 1000;
     private final int OVERLAY_PERMISSION_REQ_CODE = 1001;
     private VCRTCPreferences vcPrefs;
-
+    private final int REQUEST_SUCCESS = 0;
+    private final int REQUEST_FAILED = 1;
+    private MainHandler mainHandler;
+    private Handler handler;
     Call call;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         vcPrefs = new VCRTCPreferences(getApplicationContext());
         call = new Call();
+        mainHandler = new MainHandler();
         new Handler().postDelayed(this::checkPermission, 1000);
     }
 
@@ -69,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void goToConference() {
+
         call.setNickname(etNickname.getText().toString());
         call.setChannel(etMeetNum.getText().toString());
         call.setPassword(etPassword.getText().toString());
@@ -143,9 +159,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Handler handler = new Handler();
+    private void loadInfoAndCall(String num, String apiServer) {
+        if (TextUtils.isEmpty(apiServer)) {
+            return;
+        }
+        String url = String.format("https://" + apiServer + "/api/" + "getmeetinginfo?addr=%s", num);
 
-    private void checkUrl(String url){
+        OkHttpUtil.doGet(url, new Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                Message msg = new Message();
+                msg.what = REQUEST_FAILED;
+                mainHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                String rep = response.body().string();
+                Message msg = new Message();
+                msg.what = REQUEST_SUCCESS;
+                Bundle bundle = new Bundle();
+                bundle.putString("rep", rep);
+                msg.setData(bundle);
+                mainHandler.sendMessage(msg);
+            }
+        });
+
+    }
+
+
+    class MainHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == REQUEST_SUCCESS) {
+                String rep = (String) msg.getData().getString("rep");
+                try {
+                    JSONObject jsonObject = new JSONObject(rep);
+                    int statusCode = jsonObject.optInt("code");
+                    if (statusCode == 200) {
+                        String hostPwd = jsonObject.optString("hostpwd");
+                        String guestPwd = jsonObject.optString("guestpwd");
+                        if (hostPwd.equals(etPassword.getText().toString()) || guestPwd.equals(etPassword.getText().toString())) {
+                            goToConference();
+                        } else {
+                            displayMessage("会议号码或密码错误");
+                        }
+                    } else {
+                        displayMessage("会议号码或密码错误");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (msg.what == REQUEST_FAILED) {
+                displayMessage("请求失败");
+            }
+            super.handleMessage(msg);
+        }
+    }
+
+    private void checkUrl(String url) {
         if (TextUtils.isEmpty(url)) {
             displayMessage("fail");
             return;
@@ -154,8 +226,8 @@ public class MainActivity extends AppCompatActivity {
         vcPrefs.setServerAddress(url, "443", new CallBack() {
             @Override
             public void success(String s) {
-                handler.post(() -> {
-                    goToConference();
+                mainHandler.post(() -> {
+                    loadInfoAndCall(etMeetNum.getText().toString(), tvAddress.getText().toString());
                 });
             }
 
@@ -166,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void displayMessage(String message){
+    private void displayMessage(String message) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
