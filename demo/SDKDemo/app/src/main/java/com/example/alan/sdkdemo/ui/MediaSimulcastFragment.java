@@ -36,8 +36,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.sdkdemo.R;
+import com.example.alan.sdkdemo.util.GlideEngine;
 import com.example.alan.sdkdemo.widget.ZoomFrameLayout;
 import com.example.alan.sdkdemo.widget.ZoomImageView;
+import com.huantansheng.easyphotos.EasyPhotos;
+import com.huantansheng.easyphotos.models.album.entity.Photo;
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
@@ -72,7 +75,7 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MediaSimulcastFragment extends android.app.Fragment implements View.OnClickListener {
+public class MediaSimulcastFragment extends Fragment implements View.OnClickListener {
 
     private final int PDF_PICKER_REQUEST = 46709;
     private final int HIDE_BAR = 1;
@@ -859,14 +862,7 @@ public class MediaSimulcastFragment extends android.app.Fragment implements View
 
 
         tvSharePicture.setOnClickListener(v -> {
-            PictureSelector.create(getActivity())
-                    .openGallery(PictureMimeType.ofImage())
-                    .imageSpanCount(3)
-                    .isCamera(false)
-                    .compress(true)
-                    .minimumCompressSize(300)
-                    .maxSelectNum(9)
-                    .forResult(PictureConfig.CHOOSE_REQUEST);
+            GlideEngine.getInstance().getPicture(this);
             popupWindowShare.dismiss();
         });
 
@@ -1067,11 +1063,11 @@ public class MediaSimulcastFragment extends android.app.Fragment implements View
                         e.printStackTrace();
                     }
                 }
-            } else if (requestCode == PictureConfig.CHOOSE_REQUEST) {
-                List<LocalMedia> selectList = PictureSelector.obtainMultipleResult(data);
+            } else if (requestCode == GlideEngine.REQUEST_CODE) {
+                ArrayList<Photo> selectList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
                 if (selectList != null && selectList.size() > 0) {
-                    for (LocalMedia media : selectList) {
-                        imagePathList.add(media.getCompressPath());
+                    for (Photo media : selectList) {
+                        imagePathList.add(media.path);
                     }
                     pictureIndex = 0;
                     isShare = true;

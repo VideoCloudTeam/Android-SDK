@@ -2,9 +2,8 @@ package com.example.alan.sdkdemo.ui;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -12,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -534,18 +534,18 @@ public class ZJConferenceActivity extends AppCompatActivity {
     private void showMediaFragment() {
         if (RTCManager.isIsShitongPlatform()) {
             mediaShiTongFragment = new MediaShiTongFragment();
-            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.fl_content, mediaShiTongFragment);
             transaction.commit();
         } else {
             if (prefs.isSimulcast()) {
                 mediaSimulcastFragment = new MediaSimulcastFragment();
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.add(R.id.fl_content, mediaSimulcastFragment);
                 transaction.commit();
             } else {
                 mediaFragment = new MediaFragment();
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.add(R.id.fl_content, mediaFragment);
                 transaction.commit();
             }
@@ -693,7 +693,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Fragment fragment = getFragmentManager().findFragmentById(R.id.fl_content);
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fl_content);
             if (fragment instanceof MediaShiTongFragment) {
                 mediaShiTongFragment.showDisconnectDialog();
                 return true;

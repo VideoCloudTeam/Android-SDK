@@ -3,7 +3,6 @@ package com.example.alan.sdkdemo.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -14,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
@@ -34,8 +34,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.sdkdemo.R;
+import com.example.alan.sdkdemo.util.GlideEngine;
 import com.example.alan.sdkdemo.widget.ZoomFrameLayout;
 import com.example.alan.sdkdemo.widget.ZoomImageView;
+import com.huantansheng.easyphotos.EasyPhotos;
+import com.huantansheng.easyphotos.models.album.entity.Photo;
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
@@ -687,14 +690,7 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         TextView tvShareScreen = view.findViewById(R.id.tv_share_screen);
 
         tvSharePicture.setOnClickListener(v -> {
-            PictureSelector.create(getActivity())
-                    .openGallery(PictureMimeType.ofImage())
-                    .imageSpanCount(3)
-                    .isCamera(false)
-                    .compress(true)
-                    .minimumCompressSize(300)
-                    .maxSelectNum(9)
-                    .forResult(PictureConfig.CHOOSE_REQUEST);
+            GlideEngine.getInstance().getPicture(this);
             popupWindowShare.dismiss();
         });
 
@@ -1031,11 +1027,11 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 }
-            } else if (requestCode == PictureConfig.CHOOSE_REQUEST) {
-                List<LocalMedia> selectList = PictureSelector.obtainMultipleResult(data);
+            } else if (requestCode == GlideEngine.REQUEST_CODE) {
+                ArrayList<Photo> selectList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
                 if (selectList != null && selectList.size() > 0) {
-                    for (LocalMedia media : selectList) {
-                        imagePathList.add(media.getCompressPath());
+                    for (Photo media : selectList) {
+                        imagePathList.add(media.path);
                     }
                     pictureIndex = 0;
                     isShare = true;

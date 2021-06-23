@@ -59,4 +59,5 @@ dependencies {
     implementation 'com.qw:soulpermission:1.1.7'
     implementation 'net.grandcentrix.tray:tray:0.12.0'
     implementation 'com.tencent.bugly:crashreport:latest.release'
+    implementation 'com.github.HuanTanSheng:EasyPhotos:2.4.5'
 }
