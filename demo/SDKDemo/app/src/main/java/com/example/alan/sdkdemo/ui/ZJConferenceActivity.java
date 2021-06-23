@@ -3,6 +3,7 @@ package com.example.alan.sdkdemo.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Process;
 import android.support.v4.app.Fragment;
 import android.content.Intent;
 import android.content.res.AssetManager;
@@ -19,7 +20,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -756,7 +759,8 @@ public class ZJConferenceActivity extends AppCompatActivity {
             audioManager = null;
         }
 
-        finish();
+//        finish();
+        Process.killProcess(Process.myPid());
     }
 
     @Override
@@ -811,10 +815,11 @@ public class ZJConferenceActivity extends AppCompatActivity {
             }
         }
 
+
         @Override
         public void onLocalStream(String uuid, String streamURL, String streamType) {
             myUUID = uuid;
-            if (mediaCallBack != null) {
+            if (mediaCallBack != null && "camera".equalsIgnoreCase(streamType)) {
                 mediaCallBack.onLocalStream(uuid, streamURL);
             }
         }

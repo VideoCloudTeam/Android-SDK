@@ -59,6 +59,7 @@ import com.vcrtc.entities.StatsItemBean;
 import com.vcrtc.listeners.DoubleClickListener;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.OkHttpUtil;
+import com.vcrtc.utils.PDFUtil;
 import com.vcrtc.utils.VCUtil;
 
 import org.webrtc.Camera1Enumerator;
@@ -268,6 +269,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
     private void initData() {
         call = ((ZJConferenceActivity) Objects.requireNonNull(getActivity())).call;
         vcrtc = ((ZJConferenceActivity) getActivity()).vcrtc;
+        pdfUtil = new PDFUtil(getActivity(), true, 1920, 1080);
 
         tvChanel.setText(call.getChannel());
 
@@ -869,8 +871,12 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         tvShareFile.setOnClickListener(v -> {
             Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
             galleryIntent.setType("application/pdf");
+            galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
+            galleryIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+            galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
             Intent chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.share_choose_file));
-            getActivity().startActivityForResult(chooserIntent, PDF_PICKER_REQUEST);
+
+            mActivity.startActivityForResult(chooserIntent, PDF_PICKER_REQUEST);
             popupWindowShare.dismiss();
         });
 
@@ -997,23 +1003,48 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
             ivPicture.reset();
             ivPicture.setVisibility(View.GONE);
             vpShare.setVisibility(View.VISIBLE);
-            ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
-            viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
-                @Override
-                public void onClick() {
-                    if (isShowBar) {
-                        hideBar();
-                    } else {
-                        showBar();
+            if (isPicture){
+                ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
+                viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
+                    @Override
+                    public void onClick() {
+                        if (isShowBar) {
+                            hideBar();
+                        } else {
+                            showBar();
+                        }
                     }
-                }
 
-                @Override
-                public void onCutBitmap(Bitmap bitmap) {
-                    vcrtc.sendPresentationImage(bitmap);
-                }
-            });
-            vpShare.setAdapter(viewPagerAdapter);
+                    @Override
+                    public void onCutBitmap(Bitmap bitmap) {
+                        vcrtc.sendPresentationBitmap(bitmap);
+                    }
+                });
+                vpShare.setAdapter(viewPagerAdapter);
+            }else if (isPDF){
+                PDFAdapter viewPagerAdapter = new PDFAdapter(mActivity, pdfUtil.getPageCount(), pdfUtil, pdfBitmap);
+                viewPagerAdapter.setOnItemImageListener(new PDFAdapter.OnItemImageListener() {
+                    @Override
+                    public void onClick() {
+                        if (isShowBar) {
+                            hideBar();
+                        } else {
+                            showBar();
+                        }
+                    }
+
+                    @Override
+                    public void onCutBitmap(Bitmap bitmap) {
+
+                    }
+
+                    @Override
+                    public void onGetImageView(ImageView imageView) {
+
+                    }
+                });
+                vpShare.setAdapter(viewPagerAdapter);
+            }
         } else {
             ivShare.setSelected(false);
             vpShare.setVisibility(View.GONE);
@@ -1022,8 +1053,15 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
     }
 
     private void sendSharePicture() {
-        File file = new File(imagePathList.get(pictureIndex));
-        vcrtc.sendPresentationImage(file);
+        Bitmap bitmap = null;
+        if (isPicture){
+            bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
+        }else if (isPDF){
+            bitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
+        }
+        if (bitmap != null){
+            vcrtc.sendPresentationImage(bitmap);
+        }
     }
 
     /**
@@ -1046,7 +1084,9 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         vpShare.setVisibility(View.GONE);
         rlShareScreen.setVisibility(View.GONE);
     }
-
+    private PDFUtil pdfUtil;
+    private Bitmap pdfBitmap;
+    private boolean isPDF = false, isPicture = false;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
@@ -1054,12 +1094,15 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
                 Uri uri = data.getData();
                 if (uri != null) {
                     try {
-                        imagePathList.addAll(bitmapUtil.pdfToImgs(uri));
+                        pdfBitmap = pdfUtil.openFile(uri);
+                        isPicture = false;
+                        isPDF = true;
                         pictureIndex = 0;
                         isShare = true;
                         startPresentation();
                         sendSharePicture();
                     } catch (Exception e) {
+                        showToast("共享失败，请检测文件格式是否正确");
                         e.printStackTrace();
                     }
                 }
@@ -1071,6 +1114,8 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
                     }
                     pictureIndex = 0;
                     isShare = true;
+                    isPicture = true;
+                    isPDF = false;
                     startPresentation();
                     sendSharePicture();
                 }
@@ -1241,6 +1286,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
                 ZJConferenceActivity.joinMuteAudio = false;
             }
         }
+
 
         @Override
         public void onLocalVideo(String uuid, VCRTCView view) {

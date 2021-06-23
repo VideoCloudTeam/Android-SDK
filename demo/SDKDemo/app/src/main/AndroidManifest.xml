@@ -24,6 +24,7 @@
             android:name=".ui.ZJConferenceActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask"
+            android:process=":media"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.VC.Fullscreen" />
         <activity android:name=".SettingActivity" />
@@ -31,7 +32,9 @@
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait" />
-
+        <activity android:name="com.huantansheng.easyphotos.ui.EasyPhotosActivity"
+            android:process=":media"
+            tools:replace="process"/>
         <receiver android:name=".receiver.ContentReceiver">
             <intent-filter>
                 <action android:name="VCService.intent.action" />
@@ -50,7 +53,6 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

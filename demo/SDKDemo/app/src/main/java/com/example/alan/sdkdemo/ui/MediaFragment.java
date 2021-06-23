@@ -55,6 +55,7 @@ import com.vcrtc.entities.Participant;
 import com.vcrtc.entities.StatsItemBean;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.OkHttpUtil;
+import com.vcrtc.utils.PDFUtil;
 import com.vcrtc.utils.SystemUtil;
 import com.vcrtc.utils.VCUtil;
 
@@ -207,9 +208,12 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         });
     }
 
+
+
     private void initData() {
         call = ((ZJConferenceActivity)getActivity()).call;
         vcrtc = ((ZJConferenceActivity)getActivity()).vcrtc;
+        pdfUtil = new PDFUtil(getActivity(), true, 1920, 1080);
 
         tvChanel.setText(call.getChannel());
 
@@ -697,7 +701,11 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         tvShareFile.setOnClickListener(v -> {
             Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
             galleryIntent.setType("application/pdf");
+            galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
+            galleryIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+            galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
             Intent chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.share_choose_file));
+
             getActivity().startActivityForResult(chooserIntent, PDF_PICKER_REQUEST);
             popupWindowShare.dismiss();
         });
@@ -954,23 +962,48 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
             ivPicture.reset();
             ivPicture.setVisibility(View.GONE);
             vpShare.setVisibility(View.VISIBLE);
-            ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
-            viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
-                @Override
-                public void onClick() {
-                    if (isShowBar) {
-                        hideBar();
-                    } else {
-                        showBar();
+            if (isPicture){
+                ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
+                viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
+                    @Override
+                    public void onClick() {
+                        if (isShowBar) {
+                            hideBar();
+                        } else {
+                            showBar();
+                        }
                     }
-                }
 
-                @Override
-                public void onCutBitmap(Bitmap bitmap) {
-                    vcrtc.sendPresentationImage(bitmap);
-                }
-            });
-            vpShare.setAdapter(viewPagerAdapter);
+                    @Override
+                    public void onCutBitmap(Bitmap bitmap) {
+                        vcrtc.sendPresentationBitmap(bitmap);
+                    }
+                });
+                vpShare.setAdapter(viewPagerAdapter);
+            }else if (isPDF){
+                PDFAdapter viewPagerAdapter = new PDFAdapter(getActivity(), pdfUtil.getPageCount(), pdfUtil, pdfBitmap);
+                viewPagerAdapter.setOnItemImageListener(new PDFAdapter.OnItemImageListener() {
+                    @Override
+                    public void onClick() {
+                        if (isShowBar) {
+                            hideBar();
+                        } else {
+                            showBar();
+                        }
+                    }
+
+                    @Override
+                    public void onCutBitmap(Bitmap bitmap) {
+
+                    }
+
+                    @Override
+                    public void onGetImageView(ImageView imageView) {
+
+                    }
+                });
+                vpShare.setAdapter(viewPagerAdapter);
+            }
         } else {
             ivShare.setSelected(false);
             vpShare.setVisibility(View.GONE);
@@ -1010,33 +1043,42 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
             flLocalVideo.addView(localView, layoutParams);
         }
     }
-
+    private PDFUtil pdfUtil;
+    private Bitmap pdfBitmap;
+    private boolean isPDF = false, isPicture = false;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == PDF_PICKER_REQUEST) {
-                Uri uri = data.getData();
-                if (uri != null) {
-                    try {
-                        imagePathList.addAll(bitmapUtil.pdfToImgs(uri));
+            if (resultCode == Activity.RESULT_OK) {
+                if (requestCode == PDF_PICKER_REQUEST) {
+                    Uri uri = data.getData();
+                    if (uri != null) {
+                        try {
+                            pdfBitmap = pdfUtil.openFile(uri);
+                            isPicture = false;
+                            isPDF = true;
+                            pictureIndex = 0;
+                            isShare = true;
+                            startPresentation();
+                            sendSharePicture();
+                        } catch (Exception e) {
+                            showToast("共享失败，请检测文件格式是否正确");
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (requestCode == GlideEngine.REQUEST_CODE) {
+                    ArrayList<Photo> selectList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
+                    if (selectList != null && selectList.size() > 0) {
+                        for (Photo media : selectList) {
+                            imagePathList.add(media.path);
+                        }
                         pictureIndex = 0;
                         isShare = true;
+                        isPicture = true;
+                        isPDF = false;
                         startPresentation();
                         sendSharePicture();
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                }
-            } else if (requestCode == GlideEngine.REQUEST_CODE) {
-                ArrayList<Photo> selectList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
-                if (selectList != null && selectList.size() > 0) {
-                    for (Photo media : selectList) {
-                        imagePathList.add(media.path);
-                    }
-                    pictureIndex = 0;
-                    isShare = true;
-                    startPresentation();
-                    sendSharePicture();
                 }
             }
         }

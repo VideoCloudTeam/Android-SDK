@@ -61,6 +61,7 @@ import com.vcrtc.entities.People;
 import com.vcrtc.entities.StatsItemBean;
 import com.vcrtc.listeners.DoubleClickListener;
 import com.vcrtc.utils.BitmapUtil;
+import com.vcrtc.utils.PDFUtil;
 import com.vcrtc.utils.VCUtil;
 
 import org.webrtc.Camera1Enumerator;
@@ -236,6 +237,9 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             @Override
             public void onPageSelected(int position) {
                 pictureIndex = position;
+                if (isPDF){
+                    pdfBitmap = pdfUtil.openPage(pictureIndex);
+                }
                 sendSharePicture();
             }
 
@@ -268,7 +272,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private void initData() {
         call = ((ZJConferenceActivity) getActivity()).call;
         vcrtc = ((ZJConferenceActivity) getActivity()).vcrtc;
-
+        pdfUtil = new PDFUtil(getActivity(), true, 1920, 1080);
         tvChanel.setText(call.getChannel());
 
         if (ZJConferenceActivity.joinMuteAudio) {
@@ -875,14 +879,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         TextView tvShareFile = view.findViewById(R.id.tv_share_file);
         TextView tvShareScreen = view.findViewById(R.id.tv_share_screen);
         tvSharePicture.setOnClickListener(v -> {
-//            PictureSelector.create(getActivity())
-//                    .openGallery(PictureMimeType.ofImage())
-//                    .imageSpanCount(3)
-//                    .isCamera(false)
-//                    .compress(true)
-//                    .minimumCompressSize(300)
-//                    .maxSelectNum(9)
-//                    .forResult(PictureConfig.CHOOSE_REQUEST);
             GlideEngine.getInstance().getPicture(this);
             popupWindowShare.dismiss();
         });
@@ -890,19 +886,19 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         tvShareFile.setOnClickListener(v -> {
             Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
             galleryIntent.setType("application/pdf");
+            galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
+            galleryIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+            galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
             Intent chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.share_choose_file));
-            getActivity().startActivityForResult(chooserIntent, PDF_PICKER_REQUEST);
+
+            mActivity.startActivityForResult(chooserIntent, PDF_PICKER_REQUEST);
             popupWindowShare.dismiss();
         });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tvShareScreen.setOnClickListener(v -> {
-                vcrtc.sendPresentationScreen();
-                popupWindowShare.dismiss();
-            });
-        } else {
-            tvShareScreen.setTextColor(getResources().getColor(R.color.vc_text_color_enable));
-        }
+        tvShareScreen.setOnClickListener(v -> {
+            vcrtc.sendPresentationScreen();
+            popupWindowShare.dismiss();
+        });
     }
 
     private TextView tvRecord, tvLive, tvViewInView, tvAdditional;
@@ -928,20 +924,12 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         line3 = view.findViewById(R.id.line3);
 
         tvRecord.setOnClickListener(v -> {
-            if (isRecord) {
-                vcrtc.switchRecorder(false);
-            } else {
-                vcrtc.switchRecorder(true);
-            }
+            vcrtc.switchRecorder(!isRecord);
             popupWindowMore.dismiss();
         });
 
         tvLive.setOnClickListener(v -> {
-            if (isLive) {
-                vcrtc.switchLiving(false);
-            } else {
-                vcrtc.switchLiving(true);
-            }
+            vcrtc.switchLiving(!isLive);
             popupWindowMore.dismiss();
         });
 
@@ -1032,23 +1020,48 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             vcrtc.updateClayout("0:1");
             ivShare.setSelected(true);
             vpShare.setVisibility(View.VISIBLE);
-            ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
-            viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
-                @Override
-                public void onClick() {
-                    if (isShowBar) {
-                        hideBar();
-                    } else {
-                        showBar();
+            if (isPicture){
+                ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
+                viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
+                    @Override
+                    public void onClick() {
+                        if (isShowBar) {
+                            hideBar();
+                        } else {
+                            showBar();
+                        }
                     }
-                }
 
-                @Override
-                public void onCutBitmap(Bitmap bitmap) {
-                    vcrtc.sendPresentationBitmap(bitmap);
-                }
-            });
-            vpShare.setAdapter(viewPagerAdapter);
+                    @Override
+                    public void onCutBitmap(Bitmap bitmap) {
+                        vcrtc.sendPresentationBitmap(bitmap);
+                    }
+                });
+                vpShare.setAdapter(viewPagerAdapter);
+            }else if (isPDF){
+                PDFAdapter viewPagerAdapter = new PDFAdapter(mActivity, pdfUtil.getPageCount(), pdfUtil, pdfBitmap);
+                viewPagerAdapter.setOnItemImageListener(new PDFAdapter.OnItemImageListener() {
+                    @Override
+                    public void onClick() {
+                        if (isShowBar) {
+                            hideBar();
+                        } else {
+                            showBar();
+                        }
+                    }
+
+                    @Override
+                    public void onCutBitmap(Bitmap bitmap) {
+
+                    }
+
+                    @Override
+                    public void onGetImageView(ImageView imageView) {
+
+                    }
+                });
+                vpShare.setAdapter(viewPagerAdapter);
+            }
         } else {
             ivShare.setSelected(false);
             vpShare.setVisibility(View.GONE);
@@ -1059,8 +1072,15 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      * 发送分享的图片
      */
     private void sendSharePicture() {
-        Bitmap bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
-        vcrtc.sendPresentationBitmap(bitmap, true);
+        Bitmap bitmap = null;
+        if (isPicture){
+            bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
+        }else if (isPDF){
+            bitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
+        }
+        if (bitmap != null){
+            vcrtc.sendPresentationBitmap(bitmap, true);
+        }
     }
 
     /**
@@ -1083,6 +1103,10 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      * @param resultCode
      * @param data
      */
+    private Bitmap pdfBitmap;
+    private boolean isPDF = false, isPicture = false;
+    private PDFUtil pdfUtil;
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
@@ -1091,19 +1115,25 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 Uri uri = data.getData();
                 if (uri != null) {
                     try {
-                        imagePathList.addAll(bitmapUtil.pdfToImgs(uri));
+                        pdfBitmap = pdfUtil.openFile(uri);
+                        isPicture = false;
+                        isPDF = true;
                         pictureIndex = 0;
                         isShare = true;
                         startPresentation();
                         sendSharePicture();
                     } catch (Exception e) {
+                        showToast("共享失败，请检测文件格式是否正确");
                         e.printStackTrace();
                     }
                 }
             } else if (requestCode == GlideEngine.REQUEST_CODE) {
                 // 从文件中选择图片并返回
+
                 ArrayList<Photo> selectList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
                 if (selectList != null && selectList.size() > 0) {
+                    isPicture = true;
+                    isPDF = false;
                     for (Photo media : selectList) {
                         imagePathList.add(media.path);
                     }
