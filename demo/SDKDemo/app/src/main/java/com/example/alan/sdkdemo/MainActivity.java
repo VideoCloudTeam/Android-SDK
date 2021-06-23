@@ -16,7 +16,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -94,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
 
     @OnClick({R.id.btn_setting, R.id.btn_login})
     public void onClick(View view) {
@@ -159,6 +165,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 检测会议室号码或密码是否正确
+     * @param num
+     * @param apiServer
+     */
     private void loadInfoAndCall(String num, String apiServer) {
         if (TextUtils.isEmpty(apiServer)) {
             return;
