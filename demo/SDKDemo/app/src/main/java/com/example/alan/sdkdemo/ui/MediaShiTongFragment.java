@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -68,7 +69,11 @@ import org.webrtc.Camera1Enumerator;
 import org.webrtc.Camera2Enumerator;
 import org.webrtc.CameraEnumerationAndroid;
 import org.webrtc.CameraEnumerator;
+import org.webrtc.SurfaceViewRenderer;
+import org.webrtc.VideoFrame;
+import org.webrtc.YuvHelper;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,6 +81,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MediaShiTongFragment extends Fragment implements View.OnClickListener {
 
@@ -112,9 +120,13 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private int time;
     public boolean isShowBar, isHideSmallView, isMuteAudio, isMuteVideo, isAudioModel, isFront, isShare, isShareScreen, isPresentation;
     private boolean isRecord, isLive;
-    /** 参会人列表，不包括自己 **/
+    /**
+     * 参会人列表，不包括自己
+     **/
     private Map<String, People> peoples;
-    /** 参会人列表，所有人**/
+    /**
+     * 参会人列表，所有人
+     **/
     private Map<String, People> showPeoples;
     private List<String> participantsSort;
     private People me;
@@ -131,6 +143,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private long clickCount = 0;
     private BitmapUtil bitmapUtil;
     private Activity mActivity;
+    VCRTCView testView;
+    private FrameLayout testFrameLayout;
 
     @Override
     public void onAttach(Context context) {
@@ -198,6 +212,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         ivMore.setOnClickListener(this);
         ivHangup.setOnClickListener(this);
         ivCancel.setOnClickListener(this);
+        testFrameLayout = rootView.findViewById(R.id.test_frame);
 
         flBigVideo.setOnClickListener(() -> {
             clickCount++;
@@ -237,7 +252,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             @Override
             public void onPageSelected(int position) {
                 pictureIndex = position;
-                if (isPDF){
+                if (isPDF) {
                     pdfBitmap = pdfUtil.openPage(pictureIndex);
                 }
                 sendSharePicture();
@@ -260,7 +275,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                     case ViewPager.SCROLL_STATE_SETTLING:
                         //释放
                         break;
-                        default:
+                    default:
                 }
                 mHandler.removeCallbacksAndMessages(null);
                 clickCount = 0;
@@ -269,6 +284,50 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
     }
 
+    private void handleVideoFrame(VideoFrame videoFrame) {
+        videoFrame.retain();
+        VideoFrame.Buffer videoFrameBuffer = videoFrame.getBuffer();
+        int width = videoFrameBuffer.getWidth();
+        int height = videoFrameBuffer.getHeight();
+        int rotation = videoFrame.getRotation();
+        long timestampNs = videoFrame.getTimestampNs();
+
+        int bufferSize = width * height * 3 / 2;
+        ByteBuffer dstBuffer = ByteBuffer.allocateDirect(bufferSize);
+
+        fillBuffer(dstBuffer, videoFrameBuffer);
+        byte[] i420 = buffer2byte(dstBuffer);
+        videoFrame.release();
+        Log.d("i420_test", "handleVideoFrame: " + i420.length);
+    }
+
+    private static void fillBuffer(ByteBuffer dstBuffer, VideoFrame.Buffer srcBuffer) {
+        VideoFrame.I420Buffer i420 = srcBuffer.toI420();
+        YuvHelper.I420Copy(i420.getDataY(), i420.getStrideY(), i420.getDataU(), i420.getStrideU(),
+                i420.getDataV(), i420.getStrideV(), dstBuffer, i420.getWidth(), i420.getHeight());
+        i420.release();
+    }
+
+    public static byte[] buffer2byte(ByteBuffer byteBuffer) {
+        byteBuffer.position(0);
+        int len = byteBuffer.limit() - byteBuffer.position();
+        byte[] bytes = new byte[len];
+        if (byteBuffer.isReadOnly()) {
+            return null;
+        } else {
+            byteBuffer.get(bytes);
+        }
+        return bytes;
+    }
+
+//        testView = new VCRTCView(getActivity());
+//        testView.setVideoCallBackListener(videoFrame -> {
+//            //使用VideoFrame时，如果不是复制i420，应先retain()增加引用计数，使用完后再release()，异步处理，不要形成堵塞
+//            Log.d("i420_test", "setVideoCallBackListener: " + videoFrame + "  main: " + (Looper.getMainLooper() == Looper.myLooper()));
+//            handleVideoFrame(videoFrame);
+//            return videoFrame;
+//        }, VCRTCView.EXTERNAL_HANDLE);
+//        testFrameLayout.addView(testView);
     private void initData() {
         call = ((ZJConferenceActivity) getActivity()).call;
         vcrtc = ((ZJConferenceActivity) getActivity()).vcrtc;
@@ -354,7 +413,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             showBar();
         } else if (i == R.id.iv_share) {
             toggleShare();
-        }else if (i == R.id.iv_more) {
+        } else if (i == R.id.iv_more) {
             showMoreWindow();
             showBar();
         } else if (i == R.id.iv_hangup) {
@@ -391,7 +450,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 case START_SCREEN_SHARE:
                     startScreenShare();
                     break;
-                    default:
+                default:
             }
         }
     };
@@ -641,6 +700,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
     /**
      * 锁定屏幕
+     *
      * @param uuid
      */
     private void setStick(String uuid) {
@@ -793,9 +853,9 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      */
     private void switchCamera() {
         if (localView != null) {
-            if (isFront){
+            if (isFront) {
                 vcrtc.switchCamera(checkCamera(false));
-            }else {
+            } else {
                 vcrtc.switchCamera(checkCamera(true));
             }
 
@@ -808,7 +868,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    private String checkCamera(boolean selectFront){
+    private String checkCamera(boolean selectFront) {
         CameraEnumerator cameraEnumerator;
         if (Camera2Enumerator.isSupported(mActivity)) {
             cameraEnumerator = new Camera2Enumerator(mActivity);
@@ -818,11 +878,11 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
         String[] devicesName = cameraEnumerator.getDeviceNames();
         Log.d("checkCamera", "checkCamera: ");
-        for (int i = 0; i < devicesName.length; i++){
-            if (selectFront && cameraEnumerator.isFrontFacing(devicesName[i])){
+        for (int i = 0; i < devicesName.length; i++) {
+            if (selectFront && cameraEnumerator.isFrontFacing(devicesName[i])) {
                 return devicesName[i];
             }
-            if (!selectFront && cameraEnumerator.isBackFacing(devicesName[i])){
+            if (!selectFront && cameraEnumerator.isBackFacing(devicesName[i])) {
                 return devicesName[i];
             }
 
@@ -1020,7 +1080,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             vcrtc.updateClayout("0:1");
             ivShare.setSelected(true);
             vpShare.setVisibility(View.VISIBLE);
-            if (isPicture){
+            if (isPicture) {
                 ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getActivity(), imagePathList);
                 viewPagerAdapter.setOnItemImageListener(new ViewPagerAdapter.OnItemImageListener() {
                     @Override
@@ -1038,7 +1098,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                     }
                 });
                 vpShare.setAdapter(viewPagerAdapter);
-            }else if (isPDF){
+            } else if (isPDF) {
                 PDFAdapter viewPagerAdapter = new PDFAdapter(mActivity, pdfUtil.getPageCount(), pdfUtil, pdfBitmap);
                 viewPagerAdapter.setOnItemImageListener(new PDFAdapter.OnItemImageListener() {
                     @Override
@@ -1073,12 +1133,12 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      */
     private void sendSharePicture() {
         Bitmap bitmap = null;
-        if (isPicture){
+        if (isPicture) {
             bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
-        }else if (isPDF){
+        } else if (isPDF) {
             bitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
         }
-        if (bitmap != null){
+        if (bitmap != null) {
             vcrtc.sendPresentationBitmap(bitmap, true);
         }
     }
@@ -1089,7 +1149,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private void stopPresentation() {
         try {
             vcrtc.stopPresentation();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print("+++++");
         }
         vcrtc.updateClayout("1:4");
@@ -1099,6 +1159,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
     /**
      * 分享选中后返回的回调
+     *
      * @param requestCode
      * @param resultCode
      * @param data
@@ -1150,8 +1211,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      * 初始化会议状态信息的画面
      */
     private void initMediaStatsWindow() {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.popup_stats,null);
-        popupWindowStats = new PopupWindow(view, RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT,false);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.popup_stats, null);
+        popupWindowStats = new PopupWindow(view, RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT, false);
         popupWindowStats.setOutsideTouchable(false);
 
         ImageView ivClose = view.findViewById(R.id.iv_close);
@@ -1438,6 +1499,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         @Override
         public void onRemoteStream(String uuid, String streamURL, String streamType) {
             if (streamType.equals("video") && peoples.containsKey(uuid)) {
+//                Log.d("i420_test", "onRemoteStream: " + streamURL);
+//                testView.setStreamURL(streamURL);
                 peoples.get(uuid).setStreamURL(streamURL);
             } else if (streamType.equals("presentation")) {
                 isPresentation = true;
