@@ -29,6 +29,8 @@ import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;
 import com.vcrtc.entities.Call;
 import com.vcrtc.utils.OkHttpUtil;
+import com.vcrtc.utils.SystemUtil;
+import com.vcrtc.utils.VCUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,7 +92,8 @@ public class MainActivity extends AppCompatActivity {
         call.setNickname(etNickname.getText().toString());
         call.setChannel(etMeetNum.getText().toString());
         call.setPassword(etPassword.getText().toString());
-
+        call.setCheckDup(VCUtil.MD5(SystemUtil.getMac(this) + call.getNickname()));
+        call.setHideMe(false);
         Intent intent = new Intent(this, ZJConferenceActivity.class);
         intent.putExtra("call", call);
         startActivity(intent);

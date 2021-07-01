@@ -21,8 +21,11 @@ import static com.vcrtc.registration.VCService.MSG;
  * 2019/7/11.
  * @author ricardo
  */
-public class ContentReceiver extends BroadcastReceiver {
 
+public class ContentReceiver extends BroadcastReceiver {
+    public final static int IN_CONFERENCE = 1;
+    public final static int HANG_UP = 2;
+    public final static int OUT_TIME = 3;
     @Override
     public void onReceive(Context context, Intent intent) {
         String message = intent.getStringExtra(MSG);
@@ -54,13 +57,14 @@ public class ContentReceiver extends BroadcastReceiver {
                 IncomingCall incomingCall = (IncomingCall) intent.getSerializableExtra(VCService.DATA_BROADCAST);
                 //已经在通话中，直接挂掉
                 if (isInConference(context)) {
-                    VCRegistrationUtil.hangup(context, 1);
+                    VCRegistrationUtil.hangup(context, IN_CONFERENCE);
                     break;
                 }
                 //显示来电界面，需要自己开发界面，并把incomingCall传过去展示相应信息
-                //showInComingView(context, incomingCall);
-                //在来电界面，接听的话可以执行下面代码
-                joinConference(context, incomingCall);
+                //在来电界面，单机接听的话可以执行下面代码
+//                joinConference(context, incomingCall);
+                // 如果是拒绝，需要执行hangup方法
+//                VCRegistrationUtil.hangup(context, 1);
                 break;
             case VCService.MSG_INCOMING_CANCELLED:
                 // 公有云会收到对方取消通话的消息
