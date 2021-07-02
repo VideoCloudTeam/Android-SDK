@@ -5,13 +5,18 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
+import com.example.alan.sdkdemo.ui.CallIncomingActivity;
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.vcrtc.entities.Call;
 import com.vcrtc.entities.IncomingCall;
 import com.vcrtc.registration.VCRegistrationUtil;
 import com.vcrtc.registration.VCService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static com.vcrtc.registration.VCService.MSG;
@@ -26,6 +31,8 @@ public class ContentReceiver extends BroadcastReceiver {
     public final static int IN_CONFERENCE = 1;
     public final static int HANG_UP = 2;
     public final static int OUT_TIME = 3;
+    public static String account = "";
+    public static String accountName = "";
     @Override
     public void onReceive(Context context, Intent intent) {
         String message = intent.getStringExtra(MSG);
@@ -41,6 +48,14 @@ public class ContentReceiver extends BroadcastReceiver {
             case VCService.MSG_USER_INFO:
                 String userJson = intent.getStringExtra(VCService.DATA_BROADCAST);
                 Log.i(TAG, "用户信息" + userJson);
+                // 此处用于被呼测试，正式开发须自己保存用户信息
+                try {
+                    JSONObject jsonObject = new JSONObject(userJson);
+                    account = jsonObject.optString("account");
+                    accountName = jsonObject.optString("trueName");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
             case VCService.MSG_SESSION_ID:
                 String sessionID = intent.getStringExtra(VCService.DATA_BROADCAST);
@@ -60,6 +75,7 @@ public class ContentReceiver extends BroadcastReceiver {
                     VCRegistrationUtil.hangup(context, IN_CONFERENCE);
                     break;
                 }
+                showInComingView(context, incomingCall);
                 //显示来电界面，需要自己开发界面，并把incomingCall传过去展示相应信息
                 //在来电界面，单机接听的话可以执行下面代码
 //                joinConference(context, incomingCall);
@@ -81,14 +97,14 @@ public class ContentReceiver extends BroadcastReceiver {
         return cn.getClassName().equals(ZJConferenceActivity.class.getName());
     }
 
-    private void joinConference(Context context, IncomingCall incomingCall) {
-        Call call = new Call();
-//        call.setAccount("");//登录的账号
-        call.setChannel(incomingCall.getChannel());
-        call.setMsgJson(incomingCall.getMsgJson());
-        call.setNickname("我的入会名称");
-        Intent intent = new Intent(context, ZJConferenceActivity.class);
-        intent.putExtra("call", call);
-        context.startActivity(intent);
+
+
+    private void showInComingView(Context context, IncomingCall inComingCall) {
+        Bundle b = new Bundle();
+        b.putSerializable("inComingCall", inComingCall);
+        Intent i = new Intent(context, CallIncomingActivity.class);
+        i.putExtras(b);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        context.startActivity(i);
     }
 }

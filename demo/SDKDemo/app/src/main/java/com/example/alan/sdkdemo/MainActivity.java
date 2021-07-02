@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
     private final int REQUEST_SUCCESS = 0;
     private final int REQUEST_FAILED = 1;
     private MainHandler mainHandler;
-    private Handler handler;
     Call call;
 
     @Override
