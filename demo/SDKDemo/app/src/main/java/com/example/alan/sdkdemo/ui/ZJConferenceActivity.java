@@ -3,6 +3,7 @@ package com.example.alan.sdkdemo.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Looper;
 import android.os.Process;
 import android.support.v4.app.Fragment;
 import android.content.Intent;
@@ -114,6 +115,10 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     static boolean isTurnOn;
 
+
+
+
+
     /**
      * if (RTCManager.isIsShitongPlatform()) {
      * // 专属云平台
@@ -135,6 +140,8 @@ public class ZJConferenceActivity extends AppCompatActivity {
      * }
      * }
      */
+
+
 
 
     @Override
@@ -164,7 +171,6 @@ public class ZJConferenceActivity extends AppCompatActivity {
         if (joinMuteAudio) {
             showToast(getString(R.string.toast_join_mute), Toast.LENGTH_SHORT);
         }
-
         initData();
         showMediaFragment();
         checkPermission();
@@ -200,9 +206,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
     }
 
     private void initData() {
-        vcrtc = new VCRTC(this);
         prefs = new VCRTCPreferences(this);
-
+        Log.d("activity_instance", "initData: " + this);
+        vcrtc = new VCRTC(this);
         if (null != call.getApiServer()) {
             vcrtc.setApiServer(call.getApiServer());
             vcrtc.setIsShitongPlatform(call.isShitongPlatform());
@@ -607,6 +613,8 @@ public class ZJConferenceActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         isForeground = true;
+        Log.d("activity_instance", "onResume: " + this);
+        RTCManager.getInstance().setActivityContext(this);
         VCWindowManager.removeFloatButton(getApplicationContext());
         muteAudio(true);
         muteVideo(true);
