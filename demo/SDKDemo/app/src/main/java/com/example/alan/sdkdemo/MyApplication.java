@@ -7,6 +7,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Process;
+import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 
 import com.qw.soul.permission.SoulPermission;
@@ -115,5 +116,11 @@ public class MyApplication extends Application {
             e.printStackTrace();
         }
         prefs.setImageFilePath(imagePath);
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
     }
 }
