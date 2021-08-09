@@ -28,6 +28,7 @@ import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;
 import com.vcrtc.entities.Call;
+import com.vcrtc.utils.CheckUtils;
 import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.utils.SystemUtil;
 import com.vcrtc.utils.VCUtil;
@@ -150,50 +151,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_PERMISSION && grantResults.length >= 2) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            }
-            if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
-            }
-        } else if (requestCode == OVERLAY_PERMISSION_REQ_CODE) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(this)) {
-                }
-            }
-        }
-    }
-
     /**
      * 检测会议室号码或密码是否正确
      * @param num
      * @param apiServer
      */
     private void loadInfoAndCall(String num, String apiServer) {
-        if (TextUtils.isEmpty(apiServer)) {
-            return;
-        }
-        String url = String.format("https://" + apiServer + "/api/" + "getmeetinginfo?addr=%s", num);
 
-        OkHttpUtil.doGet(url, new Callback() {
+        CheckUtils.checkConference(num, apiServer, new CheckUtils.CheckConferenceListener() {
             @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
+            public void onSuccess(String s) {
                 Message msg = new Message();
-                msg.what = REQUEST_FAILED;
+                msg.what = REQUEST_SUCCESS;
+                Bundle bundle = new Bundle();
+                bundle.putString("rep", s);
+                msg.setData(bundle);
                 mainHandler.sendMessage(msg);
             }
 
             @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                String rep = response.body().string();
+            public void onFail(Exception e) {
                 Message msg = new Message();
-                msg.what = REQUEST_SUCCESS;
-                Bundle bundle = new Bundle();
-                bundle.putString("rep", rep);
-                msg.setData(bundle);
+                msg.what = REQUEST_FAILED;
                 mainHandler.sendMessage(msg);
             }
         });
@@ -205,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == REQUEST_SUCCESS) {
-                String rep = (String) msg.getData().getString("rep");
+                String rep = msg.getData().getString("rep");
                 try {
                     JSONObject jsonObject = new JSONObject(rep);
                     int statusCode = jsonObject.optInt("code");
@@ -252,12 +231,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void displayMessage(String message) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-            }
-        });
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
 
     }
 

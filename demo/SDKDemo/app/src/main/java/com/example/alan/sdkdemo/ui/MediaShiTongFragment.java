@@ -1094,7 +1094,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
                     @Override
                     public void onCutBitmap(Bitmap bitmap) {
-                        vcrtc.sendPresentationBitmap(bitmap);
+                        vcrtc.sendPresentation(bitmap);
                     }
                 });
                 vpShare.setAdapter(viewPagerAdapter);
@@ -1139,7 +1139,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             bitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
         }
         if (bitmap != null) {
-            vcrtc.sendPresentationBitmap(bitmap, true);
+            vcrtc.sendPresentation(bitmap);
         }
     }
 
@@ -1150,7 +1150,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         try {
             vcrtc.stopPresentation();
         } catch (Exception e) {
-            System.out.print("+++++");
         }
         vcrtc.updateClayout("1:4");
         vpShare.setVisibility(View.GONE);
@@ -1499,8 +1498,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         @Override
         public void onRemoteStream(String uuid, String streamURL, String streamType) {
             if (streamType.equals("video") && peoples.containsKey(uuid)) {
-//                Log.d("i420_test", "onRemoteStream: " + streamURL);
-//                testView.setStreamURL(streamURL);
                 peoples.get(uuid).setStreamURL(streamURL);
             } else if (streamType.equals("presentation")) {
                 isPresentation = true;

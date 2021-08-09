@@ -328,6 +328,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
         phoneListener.setPhoneListener(new VCPhoneListener.MyPhoneStateListener() {
             @Override
             public void onIdle() {
+                Log.d("phoneListener", "onIdle: " + audioDevice);
                 if (audioDevice.equals(VCAudioManager.AudioDevice.BLUETOOTH)) {
                     AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
                     audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
@@ -457,19 +458,14 @@ public class ZJConferenceActivity extends AppCompatActivity {
      */
     private void makeCall(VCRTC.CallType callType) {
         refreshAudioVideoIcon();
-        if (RTCManager.isIsShitongPlatform() && isTurnOn) {
-            vcrtc.setCallType(VCRTC.CallType.none);
-        } else {
-            vcrtc.setCallType(callType);
-        }
+        vcrtc.setCallType(callType);
         vcrtc.setVCRTCListener(listener);
-        vcrtc.setCheckdup(call.getCheckDup());
-        vcrtc.setHideMe(call.isHideMe());
-        vcrtc.setClayout("1:4");
+//        vcrtc.setCheckdup(call.getCheckDup());
+        vcrtc.setClayout("1:4"); // 默认1：5
         if (null != call.getAccount()) {
             vcrtc.setAccount(call.getAccount());
         }
-        // 如果是被呼msgjson中会有对应信息，主动入会不需要
+//         如果是被呼msgjson中会有对应信息，主动入会不需要
         if (call.getMsgJson() != null && !"".equals(call.getMsgJson())) {
             try {
                 JSONObject root = new JSONObject(call.getMsgJson());
