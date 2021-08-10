@@ -187,6 +187,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
                 audioManager.startBluetoothSco();
                 audioManager.setBluetoothScoOn(true);
                 audioManager.setSpeakerphoneOn(false);
+
             } else {
                 Log.d("audioManager", "onIdle: " + audioDevice);
                 if (audioManager != null) {

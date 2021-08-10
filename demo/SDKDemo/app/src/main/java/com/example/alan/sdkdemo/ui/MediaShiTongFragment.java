@@ -1392,7 +1392,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
         @Override
         public void onLocalVideo(String uuid, VCRTCView view) {
-
         }
 
         @Override

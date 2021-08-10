@@ -14,6 +14,7 @@ import com.qw.soul.permission.SoulPermission;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.utils.LogUtil;
+import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.webrtc.RTCManager;
 
 import java.io.BufferedReader;
@@ -48,10 +49,14 @@ public class MyApplication extends Application {
 //        prefs.setCameraVideoSize(1920, 1080);
 //        prefs.setRtspEncoder(true);
 //        prefs.setRtspURL("");
-
         if (isAppMainProcess()){
+            // 设置开发者token和deviceId
+            OkHttpUtil.setApplicationContext(this);
+            prefs.setDeviceId("");
+            prefs.setToken("");
             //复制关闭摄像头的图片到手机
             copyCloseVideoImageFromRaw(prefs);
+
         }
         prefs.setPrintLogs(true);
         LogUtil.startWriteLog(this, false);
