@@ -49,9 +49,9 @@ public class MyApplication extends Application {
 //        prefs.setCameraVideoSize(1920, 1080);
 //        prefs.setRtspEncoder(true);
 //        prefs.setRtspURL("");
+        OkHttpUtil.setApplicationContext(this);
         if (isAppMainProcess()){
             // 设置开发者token和deviceId
-            OkHttpUtil.setApplicationContext(this);
             prefs.setDeviceId("");
             prefs.setToken("");
             //复制关闭摄像头的图片到手机
