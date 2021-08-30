@@ -161,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
         CheckUtils.checkConference(num, apiServer, new CheckUtils.CheckConferenceListener() {
             @Override
             public void onSuccess(String s) {
+                Log.d("loadInfoAndCall", "onSuccess: " + s);
                 Message msg = new Message();
                 msg.what = REQUEST_SUCCESS;
                 Bundle bundle = new Bundle();

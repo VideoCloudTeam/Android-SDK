@@ -533,6 +533,20 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                                 itemBeanList.add(bean);
                             }
                         }
+
+                        for (MediaStats mediaStats : stats) {
+                            if ("presentation".equals(mediaStats.getMediaType()) && "out".equals(mediaStats.getDirection())) {
+                                StatsItemBean bean = new StatsItemBean();
+                                bean.setCodec(mediaStats.getCodec());
+                                bean.setResolution(mediaStats.getResolution());
+                                bean.setFrameRate(mediaStats.getFrameRate() + "");
+                                bean.setBitRate(mediaStats.getBitrate() + "");
+                                bean.setJitter(mediaStats.getJitter() + "ms");
+                                bean.setPacketsLost(String.valueOf(mediaStats.getPacketsLost()));
+                                bean.setFractionLost(mediaStats.getFractionLost());
+                                Log.d("media_presentation", "分辨率: " + bean.getResolution() + " 帧率： " + bean.getFrameRate());
+                            }
+                        }
                         for (MediaStats mediaStats : stats) {
                             fractionLost += mediaStats.getFractionLost();
                         }
