@@ -13,8 +13,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.alan.sdkdemo.contact.SPUtil;
 import com.vcrtc.registration.VCRegistrationUtil;
 import com.vcrtc.registration.VCService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -82,6 +86,14 @@ public class LoginActivity extends AppCompatActivity {
                 case VCService.MSG_USER_INFO:
                     //用户信息
                     String userJson = intent.getStringExtra(VCService.DATA_BROADCAST);
+                    SPUtil.Companion.instance(LoginActivity.this).setLogin(true);
+                    Log.d("user_info", "onReceive: " + userJson);
+                    try {
+                        JSONObject jsonObject = new JSONObject(userJson);
+                        SPUtil.Companion.instance(LoginActivity.this).setSessionId(jsonObject.optString("session_id"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 default:
             }

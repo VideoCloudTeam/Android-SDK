@@ -24,6 +24,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.alan.sdkdemo.contact.ContactActivity;
+import com.example.alan.sdkdemo.contact.SPUtil;
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;
@@ -104,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         return super.dispatchTouchEvent(ev);
     }
 
-    @OnClick({R.id.btn_setting, R.id.btn_login})
+    @OnClick({R.id.btn_setting, R.id.btn_login, R.id.btn_contact})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_setting:
@@ -114,6 +116,17 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btn_login:
                 Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(loginIntent);
+                break;
+            case R.id.btn_contact:
+                if (SPUtil.Companion.instance(this).isLogin()){
+                    Intent ContactIntent = new Intent(MainActivity.this, ContactActivity.class);
+                    startActivity(ContactIntent);
+                }else {
+                    Toast.makeText(MainActivity.this, "先登录", Toast.LENGTH_SHORT).show();
+                }
+
+
+
                 break;
             default:
         }
@@ -153,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 检测会议室号码或密码是否正确
+     *
      * @param num
      * @param apiServer
      */

@@ -10,6 +10,7 @@ import android.os.Process;
 import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 
+import com.example.alan.sdkdemo.contact.SPUtil;
 import com.qw.soul.permission.SoulPermission;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.vcrtc.VCRTCPreferences;
@@ -51,9 +52,11 @@ public class MyApplication extends Application {
 //        prefs.setRtspURL("");
         OkHttpUtil.setApplicationContext(this);
         if (isAppMainProcess()){
+            SPUtil.Companion.instance(getApplicationContext()).setLogin(false);
+            prefs.setNeedSecurityHead(true);
             // 设置开发者token和deviceId
-            prefs.setDeviceId("");
-            prefs.setToken("");
+            prefs.setDeviceId("b6ecdce5-demo-4fc1-957d-b9bda59daf4f");
+            prefs.setToken("f1d91d35-demo-468f-a3e0-f7ae9f365841");
             //复制关闭摄像头的图片到手机
             copyCloseVideoImageFromRaw(prefs);
 

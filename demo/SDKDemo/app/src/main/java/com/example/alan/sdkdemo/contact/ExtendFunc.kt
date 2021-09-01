@@ -1,14 +1,16 @@
 package com.example.alan.sdkdemo.contact
 
+import android.text.TextUtils
+import android.util.Log
 import com.vcrtc.utils.OkHttpUtil
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.*
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
+import org.json.JSONObject
 import java.io.IOException
+import java.lang.Exception
+import java.lang.IllegalStateException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -16,27 +18,45 @@ import kotlin.coroutines.resumeWithException
  * Created by ricardo
  * 8/30/21.
  */
-class ExtendFunc {
+class HttpUtil {
+    companion object{
+        suspend fun doPost(url: String, params: String, header: Map<String, String>?): Deferred<String> {
 
-    suspend fun doPost(url: String, params: Map<String, String>, header: Map<String, String>): Deferred<String> {
+            return suspendCancellableCoroutine {
 
-        return suspendCancellableCoroutine {
+                val deferred = CompletableDeferred<String>()
+                Log.d("HttpUtil", "url: $url")
+                OkHttpUtil.doPost(url, params, header, object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        Log.d("HttpUtil", "reason : ${e.message}")
+                        it.resumeWithException(e)
+                    }
 
-            val deferred = CompletableDeferred<String>()
-            OkHttpUtil.doPost(url, params, header, object : Callback{
-                override fun onFailure(call: Call, e: IOException) {
-                    it.resumeWithException(e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val resp = response.body()?.string()
-                    resp?.let { it1 -> deferred.complete(it1) }
-                    it.resume(deferred)
-                }
-            })
+                    override fun onResponse(call: Call, response: Response) {
+                        val resp = response.body()?.string()
+                        Log.d("HttpUtil", "response body: $resp")
+                        val responseBody = JSONObject(resp)
+                        val result = responseBody.optString("result")
+                        if (!TextUtils.isEmpty(result)) {
+                            it.resumeWithException(IllegalStateException(result))
+                        } else {
+                            if (resp != null) {
+                                deferred.complete(resp)
+                            }
+                            it.resume(deferred)
+                        }
+//                        if (TextUtils.isEmpty(result)){
+//                            resp?.let { it1 -> deferred.complete(it1) }
+//                            it.resume(deferred)
+//                        }else{
+//                            it.resumeWithException(IllegalStateException("error"))
+//                        }
+                    }
+                })
+            }
         }
-
-
-
     }
+
+
+
 }

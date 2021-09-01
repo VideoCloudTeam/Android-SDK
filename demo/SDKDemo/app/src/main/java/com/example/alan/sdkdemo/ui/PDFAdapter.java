@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.github.chrisbanes.photoview.PhotoView;
+import com.luck.picture.lib.photoview.PhotoView;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.PDFUtil;
 

@@ -659,7 +659,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
         if (shareScreen && audioManager != null) {
             if (VCUtil.checkFloatPermission(this)) {
                 //开启悬浮按钮
-                VCWindowManager.createFloatButton(getApplicationContext(), ZJConferenceActivity.class, MIUtil.getSystem());
+                VCWindowManager.createFloatButton(getApplicationContext(), ZJConferenceActivity.class, false);
 
                 vcrtc.setVideoEnable(false, true);
             } else {
@@ -826,6 +826,12 @@ public class ZJConferenceActivity extends AppCompatActivity {
             myUUID = uuid;
             if (mediaCallBack != null && "camera".equalsIgnoreCase(streamType)) {
                 mediaCallBack.onLocalStream(uuid, streamURL);
+            }
+            Log.d("onLocalStream", "streamType: " + streamType + " url: " + streamURL);
+            if ("screen".equals(streamType)){
+                VCRTCView view = findViewById(R.id.test);
+                view.setZOrder(2);
+                view.setStreamURL(streamURL);
             }
         }
 
