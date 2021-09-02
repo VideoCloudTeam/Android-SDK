@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.example.alan.sdkdemo.R
@@ -102,7 +101,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
         arrayValue.put(-1)
         requestBody.put("filter_type", arrayName)
         requestBody.put("filter_value", arrayValue)
-        val response = HttpUtil.doPost(requestUrl, requestBody.toString(), null).await()
+        val response = HttpUtil.doPostAsync(requestUrl, requestBody.toString(), null).await()
         var headquartersId = ""
         if (!TextUtils.isEmpty(response)) {
             headquartersId = JSONObject(response).getJSONArray("department_ids")[0].toString()
@@ -127,7 +126,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
         requestBody.put("cmdid", "get_usr_online_status")
         requestBody.put("usr_ids", setDataToIdList())
         try {
-            val responseBody = HttpUtil.doPost(requestUrl, requestBody.toString(), null).await()
+            val responseBody = HttpUtil.doPostAsync(requestUrl, requestBody.toString(), null).await()
             parseStatus(responseBody)
         } catch (e: Exception) {
             Log.d("getOnlineStatus", ": " + e.message)
@@ -178,7 +177,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
         requestBody.put("cmdid", "get_department")
         requestBody.put("department_id", Integer.valueOf(currentId))
         requestBody.put("option", "account")
-        val response = HttpUtil.doPost(requestUrl, requestBody.toString(), null).await()
+        val response = HttpUtil.doPostAsync(requestUrl, requestBody.toString(), null).await()
         return CompletableDeferred(response)
     }
 

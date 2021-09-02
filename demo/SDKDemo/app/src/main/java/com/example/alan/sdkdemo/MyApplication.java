@@ -53,6 +53,9 @@ public class MyApplication extends Application {
         OkHttpUtil.setApplicationContext(this);
         if (isAppMainProcess()){
             SPUtil.Companion.instance(getApplicationContext()).setLogin(false);
+            SPUtil.Companion.instance(getApplicationContext()).setModel("");
+            SPUtil.Companion.instance(getApplicationContext()).setSessionId("");
+            SPUtil.Companion.instance(getApplicationContext()).setCompanyId("");
             prefs.setNeedSecurityHead(true);
             // 设置开发者token和deviceId
             prefs.setDeviceId("b6ecdce5-demo-4fc1-957d-b9bda59daf4f");

@@ -41,4 +41,17 @@ class SPUtil {
         edit.putBoolean("login", isLogin)
         edit.apply()
     }
+
+    fun setModel(model: String){
+        val edit = sp!!.edit()
+        edit.putString("appMode", model)
+        edit.apply()
+    }
+
+    fun getModel(): String = sp?.getString("appMode", "")!!
+
+    fun setCompanyId(companyID: String){
+        sp!!.edit().putString("companyId", companyID).apply()
+    }
+    fun getCompanyId(): String = sp?.getString("companyId", "")!!
 }

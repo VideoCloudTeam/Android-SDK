@@ -15,7 +15,6 @@ import com.example.alan.sdkdemo.contact.SPUtil
 import kotlinx.coroutines.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.lang.Exception
 
 class ContactDetailFragment : Fragment() {
     val ID = "id"
@@ -46,8 +45,6 @@ class ContactDetailFragment : Fragment() {
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-
-
                 contactId?.let {
                     val responseBody = fetchContactInfoAsync(it).await()
                     if (!TextUtils.isEmpty(responseBody)) {
@@ -111,7 +108,7 @@ class ContactDetailFragment : Fragment() {
         body.put("cmdid", "subscribe_usr")
         body.put("usr_ids", typeArray)
         body.put("last_modify_dtms", valueArray)
-        val responseBody = HttpUtil.doPost(requestUrl, body.toString(), null).await()
+        val responseBody = HttpUtil.doPostAsync(requestUrl, body.toString(), null).await()
         return CompletableDeferred(responseBody)
     }
 

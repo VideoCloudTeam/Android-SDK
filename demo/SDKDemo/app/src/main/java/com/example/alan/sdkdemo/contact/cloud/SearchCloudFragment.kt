@@ -1,7 +1,6 @@
 package com.example.alan.sdkdemo.contact.cloud
 
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -60,7 +59,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
                             parseDetail(responseDetail)
                         }
                     } catch (e: Exception) {
-                        GlobalScope.launch(Dispatchers.Main){
+                        withContext(Dispatchers.Main){
                             Toast.makeText(activity, e.message, Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -129,7 +128,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
         requestBody.put("filter_type", typeArray)
         requestBody.put("filter_value", valueArray)
 
-        val responseBody = HttpUtil.doPost(requestUrl, requestBody.toString(), null).await()
+        val responseBody = HttpUtil.doPostAsync(requestUrl, requestBody.toString(), null).await()
 
         return CompletableDeferred(responseBody)
     }
@@ -143,7 +142,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
         body.put("cmdid", "subscribe_usr")
         body.put("usr_ids", typeArray)
         body.put("last_modify_dtms", valueArray)
-        val responseBody = HttpUtil.doPost(requestUrl, body.toString(), null).await()
+        val responseBody = HttpUtil.doPostAsync(requestUrl, body.toString(), null).await()
         return CompletableDeferred(responseBody)
     }
 
@@ -176,7 +175,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
      * @param nick_names
      * @param usr_ids
      */
-    fun getContactListP(nick_names: JSONArray, usr_ids: JSONArray, is_endpoints: JSONArray, login_ids: JSONArray, current_department: JSONArray, departNames: JSONArray, duties: JSONArray, onLineStatus: JSONArray) {
+    private fun getContactListP(nick_names: JSONArray, usr_ids: JSONArray, is_endpoints: JSONArray, login_ids: JSONArray, current_department: JSONArray, departNames: JSONArray, duties: JSONArray, onLineStatus: JSONArray) {
         peopleList.clear()
         contactBeanList.clear()
         for (i in 0 until nick_names.length()) {

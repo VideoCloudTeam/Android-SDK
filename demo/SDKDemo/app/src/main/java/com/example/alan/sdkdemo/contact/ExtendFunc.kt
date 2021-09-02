@@ -8,6 +8,7 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.json.JSONObject
+import org.w3c.dom.Text
 import java.io.IOException
 import java.lang.Exception
 import java.lang.IllegalStateException
@@ -20,7 +21,7 @@ import kotlin.coroutines.resumeWithException
  */
 class HttpUtil {
     companion object{
-        suspend fun doPost(url: String, params: String, header: Map<String, String>?): Deferred<String> {
+        suspend fun doPostAsync(url: String, params: String, header: Map<String, String>?): Deferred<String> {
 
             return suspendCancellableCoroutine {
 
@@ -40,17 +41,24 @@ class HttpUtil {
                         if (!TextUtils.isEmpty(result)) {
                             it.resumeWithException(IllegalStateException(result))
                         } else {
-                            if (resp != null) {
-                                deferred.complete(resp)
+                            val code = responseBody.optString("code")
+                            when {
+                                TextUtils.isEmpty(code) -> {
+                                    if (resp != null) {
+                                        deferred.complete(resp)
+                                    }
+                                    it.resume(deferred)
+                                }
+                                code == "200" -> {
+                                    resp?.let { it1 -> deferred.complete(it1) }
+                                    it.resume(deferred)
+                                }
+                                else -> {
+                                    it.resumeWithException(IllegalStateException(responseBody.toString()))
+                                }
                             }
-                            it.resume(deferred)
+
                         }
-//                        if (TextUtils.isEmpty(result)){
-//                            resp?.let { it1 -> deferred.complete(it1) }
-//                            it.resume(deferred)
-//                        }else{
-//                            it.resumeWithException(IllegalStateException("error"))
-//                        }
                     }
                 })
             }
