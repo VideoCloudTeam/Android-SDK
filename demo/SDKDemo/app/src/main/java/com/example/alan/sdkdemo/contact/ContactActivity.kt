@@ -11,6 +11,8 @@ import com.example.alan.sdkdemo.contact.cloud.ContactCloudFragment
 import com.example.alan.sdkdemo.contact.cloud.ContactDetailFragment
 import com.example.alan.sdkdemo.contact.cloud.SearchCloudFragment
 import com.example.alan.sdkdemo.contact.common.ContactCommonFragment
+import com.example.alan.sdkdemo.contact.common.ContactDetailCloudFragment
+import com.example.alan.sdkdemo.contact.common.SearchCommonFragment
 import com.vcrtc.VCRTCPreferences
 
 class ContactActivity : AppCompatActivity(), View.OnClickListener {
@@ -54,16 +56,26 @@ class ContactActivity : AppCompatActivity(), View.OnClickListener {
                 .commitAllowingStateLoss()
     }
 
-    fun showContactDetail(id: String) {
+    fun showContactDetail(contactBean: ContactBean) {
+        val fragment: Fragment = if (vcrp.isShiTongPlatform){
+            ContactDetailFragment.newInstance(contactBean.usrId)
+        }else {
+            ContactDetailCloudFragment.newInstance(contactBean)
+        }
         supportFragmentManager.beginTransaction()
-                .replace(R.id.fl_content, ContactDetailFragment.newInstance(id), "")
+                .replace(R.id.fl_content, fragment, "")
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
     }
 
     fun showContactSearch() {
+        val fragment: Fragment = if (vcrp.isShiTongPlatform){
+            SearchCloudFragment.newInstance()
+        }else {
+            SearchCommonFragment.newInstance()
+        }
         supportFragmentManager.beginTransaction()
-                .replace(R.id.fl_content, SearchCloudFragment.newInstance(), "")
+                .replace(R.id.fl_content, fragment, "")
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
     }

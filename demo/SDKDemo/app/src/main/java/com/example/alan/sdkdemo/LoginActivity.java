@@ -56,6 +56,11 @@ public class LoginActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.btn_login:
+                VCRegistrationUtil.logout(this);
+                SPUtil.Companion.instance(getApplicationContext()).setLogin(false);
+                SPUtil.Companion.instance(getApplicationContext()).setModel("");
+                SPUtil.Companion.instance(getApplicationContext()).setSessionId("");
+                SPUtil.Companion.instance(getApplicationContext()).setCompanyId("");
                 VCRegistrationUtil.login(this,"", email.getText().toString(), password.getText().toString());
                 break;
             case R.id.btn_logout:

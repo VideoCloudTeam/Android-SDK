@@ -1,6 +1,7 @@
 package com.example.alan.sdkdemo.contact.common
 
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -16,9 +17,6 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
-/**
- * A fragment representing a list of Items.
- */
 class ContactCommonFragment : Fragment(), ItemClick {
     private val dataList = mutableListOf<ContactBean>()
     private val peopleList = mutableListOf<ContactBean>()
@@ -39,6 +37,9 @@ class ContactCommonFragment : Fragment(), ItemClick {
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_contact_common_list, container, false)
         initRecyclerView(view)
+        view.findViewById<ConstraintLayout>(R.id.con_search).setOnClickListener {
+            (activity as ContactActivity).showContactSearch()
+        }
         when (SPUtil.instance(activity!!).getModel()) {
             "cloud_conference" -> {
                 // 云会议室模型下通讯录
@@ -226,7 +227,7 @@ class ContactCommonFragment : Fragment(), ItemClick {
 
     override fun onItemClickListener(bean: ContactBean, isPeople: Boolean) {
         if (isPeople) {
-
+            (activity as ContactActivity).showContactDetail(bean)
         } else {
             (activity as ContactActivity).showNextDepartment(bean.departmentId)
         }

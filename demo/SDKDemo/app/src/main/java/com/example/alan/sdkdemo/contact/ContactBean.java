@@ -176,4 +176,29 @@ public class ContactBean implements Serializable {
     public void setPeople(boolean people) {
         isPeople = people;
     }
+
+    @Override
+    public String toString() {
+        return "ContactBean{" +
+                "departmentName='" + departmentName + '\'' +
+                ", departmentId='" + departmentId + '\'' +
+                ", usrOnlineStatu='" + usrOnlineStatu + '\'' +
+                ", usrId='" + usrId + '\'' +
+                ", usrNickName='" + usrNickName + '\'' +
+                ", usrLoginId='" + usrLoginId + '\'' +
+                ", usrIsEndpoint='" + usrIsEndpoint + '\'' +
+                ", usrCuid='" + usrCuid + '\'' +
+                ", isPeople=" + isPeople +
+                ", isShowHead=" + isShowHead +
+                ", departmentIds=" + departmentIds +
+                ", isChoose=" + isChoose +
+                ", email='" + email + '\'' +
+                ", departListAnother=" + departListAnother +
+                ", departFatherList=" + departFatherList +
+                ", duties='" + duties + '\'' +
+                ", onLineStatus=" + onLineStatus +
+                ", meetNum='" + meetNum + '\'' +
+                ", sipKey='" + sipKey + '\'' +
+                '}';
+    }
 }

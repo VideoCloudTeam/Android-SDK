@@ -264,7 +264,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
         if (!isPeople) {
             (activity as ContactActivity).showNextDepartment(bean.departmentId)
         } else {
-            (activity as ContactActivity).showContactDetail(bean.usrId)
+            (activity as ContactActivity).showContactDetail(bean)
         }
     }
 

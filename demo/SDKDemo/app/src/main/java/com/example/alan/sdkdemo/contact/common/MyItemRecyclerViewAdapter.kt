@@ -35,6 +35,7 @@ class MyItemRecyclerViewAdapter(
                 holder.ivHead.setImageResource(R.drawable.icon_terminal_online)
             }
         }else{
+            holder.ivHead.setImageResource(R.drawable.box)
             holder.tvName.text = contactBean.departmentName
             holder.ivGuide.visibility = View.VISIBLE
         }
