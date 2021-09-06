@@ -711,7 +711,10 @@ public class ZJConferenceActivity extends AppCompatActivity {
             } else if (fragment instanceof MediaFragment) {
                 mediaFragment.showDisconnectDialog();
                 return true;
-            } else {
+            } else if (fragment instanceof ParticipantFragment){
+                getSupportFragmentManager().popBackStack();
+                return true;
+            }else {
                 return super.onKeyUp(keyCode, event);
             }
         } else {
@@ -784,6 +787,14 @@ public class ZJConferenceActivity extends AppCompatActivity {
         }
     }
 
+    public void showParticipant(){
+        Fragment participantFragment = ParticipantFragment.newInstance();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.fl_content, participantFragment).addToBackStack(null);
+
+        transaction.commit();
+    }
+
     /**
      * 信息回调监听，具体可参照文档
      */
@@ -826,12 +837,6 @@ public class ZJConferenceActivity extends AppCompatActivity {
             myUUID = uuid;
             if (mediaCallBack != null && "camera".equalsIgnoreCase(streamType)) {
                 mediaCallBack.onLocalStream(uuid, streamURL);
-            }
-            Log.d("onLocalStream", "streamType: " + streamType + " url: " + streamURL);
-            if ("screen".equals(streamType)){
-                VCRTCView view = findViewById(R.id.test);
-                view.setZOrder(2);
-                view.setStreamURL(streamURL);
             }
         }
 

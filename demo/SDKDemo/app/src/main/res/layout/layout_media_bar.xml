@@ -124,8 +124,7 @@
             android:layout_toLeftOf="@id/iv_more"
             android:layout_marginRight="15dp"
             android:padding="5dp"
-
-            android:visibility="gone"
+            android:visibility="visible"
             android:src="@mipmap/tabbar_btn06"/>
 
         <TextView

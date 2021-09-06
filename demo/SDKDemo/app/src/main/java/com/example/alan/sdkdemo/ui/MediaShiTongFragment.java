@@ -430,6 +430,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             showToast(getString(R.string.main_screen_unlock));
         } else if (i == R.id.iv_call_cancel) {
             disconnect();
+        } else if (i == R.id.iv_participants){
+            ((ZJConferenceActivity)getActivity()).showParticipant();
         }
     }
 
