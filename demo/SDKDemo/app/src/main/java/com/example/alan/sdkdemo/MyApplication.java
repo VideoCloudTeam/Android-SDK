@@ -35,10 +35,6 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-
-
-
         VCRTCPreferences prefs = new VCRTCPreferences(this);
 
         // rtsp

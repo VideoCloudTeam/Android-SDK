@@ -373,7 +373,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
         bigView = new VCRTCView(getActivity());
         bigView.setZOrder(0);
-        bigView.setObjectFit("cover");
+        bigView.setObjectFit("contain");
         if (ZJConferenceActivity.allowCamera)
             bigView.setMirror(true);
 
@@ -719,7 +719,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      *
      * @param uuid
      */
-    private void setStick(String uuid) {
+    public void setStick(String uuid) {
         if (uuid != null && !"".equals(uuid)) {
             if (uuid.equals(me.getUuid())) {
                 makeMeBig = true;
@@ -1426,7 +1426,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 localView.setZOrder(1);
                 if (ZJConferenceActivity.allowCamera)
                     localView.setMirror(true);
-                localView.setObjectFit("cover");
+                localView.setObjectFit("contain");
                 localView.setStreamURL(streamURL);
 
                 View myView = getActivity().getLayoutInflater().inflate(R.layout.video_item, null);
@@ -1476,7 +1476,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         public void onAddView(String uuid, VCRTCView view, String viewType) {
             if (viewType.equals("video") && peoples.containsKey(uuid)) {
                 view.setZOrder(1);
-                view.setObjectFit("cover");
+                view.setObjectFit("contain");
                 View peopleView = peoples.get(uuid).getPeopleView();
                 FrameLayout flVideo = peopleView.findViewById(R.id.fl_video);
                 flVideo.removeAllViews();

@@ -1,6 +1,8 @@
 package com.example.alan.sdkdemo.ui
 
 import android.content.Context
+import android.media.Image
+import android.support.constraint.ConstraintLayout
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +16,7 @@ import com.vcrtc.entities.Participant
  * Created by ricardo
  * 9/6/21.
  */
-class ParticipantAdapter(private val dataList: MutableList<Participant>, val context: Context) : RecyclerView.Adapter<ParticipantAdapter.ViewHolder>() {
+class ParticipantAdapter(private val dataList: MutableList<Participant>, val context: Context, val onItemListener: OnParticipantItemListener) : RecyclerView.Adapter<ParticipantAdapter.ViewHolder>() {
 
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
@@ -23,18 +25,26 @@ class ParticipantAdapter(private val dataList: MutableList<Participant>, val con
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.apply {
-            tvIdentity.text = if ("chair" == dataList[position].role){
+            tvIdentity.text = if ("chair" == dataList[position].role) {
                 "主持人"
-            }else{
+            } else {
                 ""
             }
             tvName.text = dataList[position].overlay_text
+            itemView.setOnClickListener {
+                onItemListener.onItemListener(dataList[position])
+            }
+            ivAudioStatus.setImageResource(if ("YES" == dataList[position].is_muted) {
+                R.drawable.icon_list_micro_off
+            } else {
+                R.drawable.icon_list_micro_on
+            })
         }
     }
 
     override fun getItemCount(): Int = dataList.size
 
-    fun updateList(dataList: MutableList<Participant>){
+    fun updateList(dataList: MutableList<Participant>) {
         this.dataList.clear()
         this.dataList.addAll(dataList)
         notifyDataSetChanged()
@@ -46,6 +56,8 @@ class ParticipantAdapter(private val dataList: MutableList<Participant>, val con
         val ivHead: ImageView = view.findViewById(R.id.iv_head)
         val tvName: TextView = view.findViewById(R.id.tv_name)
         val tvIdentity: TextView = view.findViewById(R.id.iv_identity)
+        val itemView: ConstraintLayout = view.findViewById(R.id.item_view)
+        val ivAudioStatus: ImageView = view.findViewById(R.id.iv_audio_status)
 
 
     }

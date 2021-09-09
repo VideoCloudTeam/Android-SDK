@@ -186,6 +186,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         ivCloseVideoBig = rootView.findViewById(R.id.iv_close_video_img);
         ivBigMute = rootView.findViewById(R.id.iv_mute_big);
         vpShare = rootView.findViewById(R.id.vp_share);
+
 //        rootView.findViewById(R.id.btn_rtmp).setOnClickListener(this);
         rlUnStick.setOnClickListener(this);
         llStats.setOnClickListener(this);
@@ -368,12 +369,9 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         } else if (i == R.id.rl_unstick) {
             setUnStick();
             showToast(getString(R.string.main_screen_unlock));
+        } else if (i == R.id.iv_participants){
+            ((ZJConferenceActivity)getActivity()).showParticipant();
         }
-//        else if (i == R.id.btn_rtmp){
-////            String url = "rtmp://video-center.alivecdn.com/ZJ/30212_401030_other_401030_132216494596930407?vhost=test4.video.kao1kao.cn&auth_key=1577262143-0-0-35851cb47289e289fa19784676594f8b";
-//            String url = "rtmp://video-center.alivecdn.com/ZJ/30212_401080_other_401080_132217094020789408?vhost=test4.video.kao1kao.cn&auth_key=1577322080-0-0-6edf6840df3603cfae1c63ae27cdb5ba";
-//            vcrtc.dialOut(url, "rtmp", "anonymous_recorder",  "guest");
-//        }
     }
 
     @SuppressLint("HandlerLeak")

@@ -311,6 +311,8 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         } else if (i == R.id.iv_close) {
             popupWindowStats.dismiss();
             stopGetStats();
+        } else if (i == R.id.iv_participants){
+            ((ZJConferenceActivity)getActivity()).showParticipant();
         }
     }
 

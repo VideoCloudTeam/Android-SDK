@@ -71,7 +71,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     private MediaFragment mediaFragment;
     private MediaSimulcastFragment mediaSimulcastFragment;
-    private MediaShiTongFragment mediaShiTongFragment;
+    public MediaShiTongFragment mediaShiTongFragment;
 
     VCRTCPreferences prefs;
     VCRTC vcrtc;
@@ -918,6 +918,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
             if (mediaCallBack != null) {
                 mediaCallBack.onRoleUpdate(role);
             }
+            if (conferenceCallBack != null) {
+                conferenceCallBack.onRoleUpdate(role);
+            }
         }
 
         @Override
@@ -1080,5 +1083,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
         void onStageVoice(List<Stage> stages);
 
         void onConferenceUpdate(ConferenceStatus status);
+
+        void onRoleUpdate(String role);
     }
 }
