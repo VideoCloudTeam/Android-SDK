@@ -24,6 +24,7 @@
         android:visibility="gone">
     </com.example.alan.sdkdemo.widget.ZoomViewPager>
 
+    <include layout="@layout/whiteboard_layout"/>
     <LinearLayout
         android:id="@+id/ll_small_video"
         android:layout_width="match_parent"
