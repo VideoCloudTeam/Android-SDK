@@ -16,15 +16,20 @@
         android:layout_height="match_parent"
         android:src="@mipmap/img_close_video"
         android:visibility="gone"/>
-
-    <com.example.alan.sdkdemo.widget.ZoomViewPager
-        android:id="@+id/vp_share"
+    <FrameLayout
+        android:id="@+id/frame_background"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
-    </com.example.alan.sdkdemo.widget.ZoomViewPager>
+        android:layout_height="match_parent">
+        <com.example.alan.sdkdemo.widget.ZoomViewPager
+            android:id="@+id/vp_share"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+        </com.example.alan.sdkdemo.widget.ZoomViewPager>
 
-    <include layout="@layout/whiteboard_layout"/>
+        <include layout="@layout/whiteboard_layout"/>
+    </FrameLayout>
+
     <LinearLayout
         android:id="@+id/ll_small_video"
         android:layout_width="match_parent"

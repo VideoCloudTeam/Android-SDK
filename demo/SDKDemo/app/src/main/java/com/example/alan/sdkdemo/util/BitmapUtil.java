@@ -1,6 +1,7 @@
 package com.example.alan.sdkdemo.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,9 +13,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.example.alan.sdkdemo.R;
+import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 import com.vcrtc.utils.RealPathUtil;
@@ -373,5 +378,43 @@ public class BitmapUtil {
 //                e.printStackTrace();
 //            }
 //        }
+    }
+
+    public static void saveBitmapInDCIM(Context context, Bitmap bitmap, String name) {
+
+        String fileName;
+        File file;
+        String path;
+
+        path = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera";
+        File cameraFile = new File(path);
+        if (!cameraFile.exists()) {
+            fileName = Environment.getExternalStorageDirectory().getPath() + "/DCIM/" + name;
+        } else {
+            fileName = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/" + name;
+        }
+
+        if (Build.VERSION.SDK_INT > 29) {
+            saveSignImage(context, bitmap, name);
+        } else {
+            file = new File(fileName);
+            if (file.exists()) {
+                file.delete();
+            }
+            FileOutputStream out;
+            try {
+                out = new FileOutputStream(file);
+                if (bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) {
+                    out.flush();
+                    out.close();
+                    MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), name, null);
+                    context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + fileName)));
+                    ((ZJConferenceActivity)context).showToast("已保存到系统相册", Toast.LENGTH_SHORT);
+                }
+            } catch (IOException e) {
+                ((ZJConferenceActivity)context).showToast("保存失败", Toast.LENGTH_SHORT);
+            }
+        }
+
     }
 }
