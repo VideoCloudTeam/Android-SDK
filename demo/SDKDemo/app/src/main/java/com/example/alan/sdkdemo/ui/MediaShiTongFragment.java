@@ -78,6 +78,7 @@ import org.webrtc.YuvHelper;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -147,7 +148,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private BitmapUtil bitmapUtil;
     private Activity mActivity;
     VCRTCView testView;
-    private FrameLayout testFrameLayout;
+    private FrameLayout testFrameLayout, flMarkBackground;
 
     private WhiteBoardUtil whiteBoardUtil;
     String whiteBoardUUID = "";
@@ -195,7 +196,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         ivAudioMedol = rootView.findViewById(R.id.iv_audio_model);
         ivShare = rootView.findViewById(R.id.iv_share);
         ivParticipants = rootView.findViewById(R.id.iv_participants);
-
+        flMarkBackground = rootView.findViewById(R.id.fl_mark_background);
         ivMore = rootView.findViewById(R.id.iv_more);
         ivHangup = rootView.findViewById(R.id.iv_hangup);
         ivCircle = rootView.findViewById(R.id.iv_circle);
@@ -261,7 +262,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 if (isPDF) {
                     pdfBitmap = pdfUtil.openPage(pictureIndex);
                 }
-                sendSharePicture();
+
             }
 
             @Override
@@ -269,6 +270,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 switch (state) {
                     case ViewPager.SCROLL_STATE_IDLE:
                         //无动作、初始状态
+                        sendSharePicture();
                         if (positionPixels == 0) {
                             showToast(getString(R.string.toast_slippery));
                         }
@@ -326,7 +328,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         return bytes;
     }
 
-//        testView = new VCRTCView(getActivity());
+    //        testView = new VCRTCView(getActivity());
 //        testView.setVideoCallBackListener(videoFrame -> {
 //            //使用VideoFrame时，如果不是复制i420，应先retain()增加引用计数，使用完后再release()，异步处理，不要形成堵塞
 //            Log.d("i420_test", "setVideoCallBackListener: " + videoFrame + "  main: " + (Looper.getMainLooper() == Looper.myLooper()));
@@ -438,8 +440,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             showToast(getString(R.string.main_screen_unlock));
         } else if (i == R.id.iv_call_cancel) {
             disconnect();
-        } else if (i == R.id.iv_participants){
-            ((ZJConferenceActivity)getActivity()).showParticipant();
+        } else if (i == R.id.iv_participants) {
+            ((ZJConferenceActivity) getActivity()).showParticipant();
         }
     }
 
@@ -949,7 +951,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     }
 
     private void stopWhiteBoard() {
-        if (mActivity != null){
+        if (mActivity != null) {
             ((ZJConferenceActivity) mActivity).isShowWhite = false;
             ivShare.setSelected(false);
             if (!whiteBoardUtil.isJoin()) {
@@ -961,7 +963,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 whiteBoardUtil.releaseView();
                 whiteBoardUtil.releaseWhiteView();
             }
-//            flMarkBackground.setVisibility(View.GONE);
+            flMarkBackground.setVisibility(View.GONE);
         }
     }
 
@@ -1002,16 +1004,18 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             vcrtc.sendPresentationScreen();
             popupWindowShare.dismiss();
         });
-        tvShareWhite.setOnClickListener( v -> {
+        tvShareWhite.setOnClickListener(v -> {
             startWhiteBoard();
             popupWindowShare.dismiss();
         });
     }
+
     /**
      * 打开白板
      */
     float whiteHeight;
     float whiteWidth;
+
     private void startWhiteBoard() {
         vpShare.setVisibility(View.GONE);
         rlShareScreen.setVisibility(View.GONE);
@@ -1210,15 +1214,22 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     /**
      * 发送分享的图片
      */
+    private Map<Integer, Bitmap> pictureMap = new HashMap<>();
     private void sendSharePicture() {
-        Bitmap bitmap = null;
         if (isPicture) {
-            bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
+            Bitmap bitmap = pictureMap.get(pictureIndex);
+            if (bitmap == null) {
+                pictureMap.put(pictureIndex, com.example.alan.sdkdemo.util.BitmapUtil.getImage(imagePathList.get(pictureIndex)));
+                bitmap = pictureMap.get(pictureIndex);
+            }
+            whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
+            if (!whiteBoardUtil.isJoin() && whiteBoardUtil.getWhiteBoardview() != null) {
+                vcrtc.updateWhiteboardImage(com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9_No_recycle(bitmap, 1920, 1080));
+            }
         } else if (isPDF) {
-            bitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
-        }
-        if (bitmap != null) {
-            vcrtc.sendPresentation(bitmap);
+            whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
+            vcrtc.updateWhiteboardImage(com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9_No_recycle(pdfBitmap, 1920, 1080));
+
         }
     }
 
@@ -1448,11 +1459,38 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         refreshUI();
     }
 
-    public void startMarkTools(boolean alreadySuccess){
-
+    public void startMarkTools(boolean alreadySuccess) {
+        Bitmap backgroundBitmap = null;
+        calculateSize();
+        if (isPicture) {
+            if (imagePathList.size() == 0) {
+                return;
+            }
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(com.example.alan.sdkdemo.util.BitmapUtil.getImage(imagePathList.get(pictureIndex)), 1920, 1080);
+        } else if (isPDF) {
+            if (pdfBitmap == null) {
+                return;
+            }
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
+        }
+        if (alreadySuccess){
+            WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+            whiteBoardView.setOnClickListener(v -> {
+                if (isShowBar) {
+                    hideBar();
+                } else {
+                    showBar();
+                }
+            });
+            whiteBoardUtil.joinMarkView(whiteBoardView);
+            whiteBoardUtil.addMarkView((int) whiteWidth, (int) whiteHeight, false);
+        }else {
+            vcrtc.sendPresentationBitmap(backgroundBitmap, true);
+            vcrtc.startTwoWayWhiteboard(backgroundBitmap, true, true);
+        }
     }
 
-    public void joinBoard(){
+    public void joinBoard() {
         if (whiteBoardUtil.getWhiteBoardview() != null) {
             whiteBoardUtil.showWhiteView();
             handleDisplay(false);
@@ -1461,8 +1499,10 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    public void joinWhitBoardTools(){
-        if (isAudioModel){return;}
+    public void joinWhitBoardTools() {
+        if (isAudioModel) {
+            return;
+        }
         calculateSize();
         WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
         whiteBoardUtil.joinWhiteBoardView(whiteBoardView);
@@ -1481,17 +1521,17 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         });
     }
 
-    public void startWhiteBoardTools(boolean alreadySuccess){
-        if (isAudioModel){
+    public void startWhiteBoardTools(boolean alreadySuccess) {
+        if (isAudioModel) {
             return;
         }
         calculateSize();
-        if (alreadySuccess){
+        if (alreadySuccess) {
             WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
             whiteBoardView.setOnClickListener(v -> {
-                if (isShowBar){
+                if (isShowBar) {
                     hideBar();
-                }else {
+                } else {
                     showBar();
                 }
             });
@@ -1499,25 +1539,27 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             whiteBoardUtil.resetPosition();
             whiteBoardUtil.addWhiteBoardView(whiteWidth, whiteHeight);
             handleDisplay(false);
-        }else {
+        } else {
             Bitmap backgroundBitmap = Bitmap.createBitmap((int) whiteWidth, (int) whiteHeight, Bitmap.Config.RGB_565);
             backgroundBitmap.eraseColor(Color.WHITE);
             vcrtc.startTwoWayWhiteboard(backgroundBitmap, false, true);
         }
     }
 
-    public void handleDisplay(boolean isShow){
-        llSmallVideo.setVisibility(isShow ? View.VISIBLE: View.GONE);
+    public void handleDisplay(boolean isShow) {
+        llSmallVideo.setVisibility(isShow ? View.VISIBLE : View.GONE);
+        flMarkBackground.setVisibility(!isShow ? View.VISIBLE : View.GONE);
+
     }
 
 
     Handler sendHandler = new Handler(Looper.getMainLooper());
 
     Runnable sendRunnable = () -> {
-        Log.d("sendRunnable", ": ");
         whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
     };
-    private void sendHandle(){
+
+    private void sendHandle() {
         sendHandler.removeCallbacks(sendRunnable);
         sendHandler.postDelayed(sendRunnable, 300);
     }
@@ -1541,10 +1583,10 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
 
         @Override
         public void onPresentationSuccess() {
-            if (isPicture || isPDF){
-
-            }else {
-                if (!isShareScreen){
+            if (isPicture || isPDF) {
+                startMarkTools(false);
+            } else {
+                if (!isShareScreen) {
                     startWhiteBoardTools(false);
                 }
             }
@@ -1589,27 +1631,27 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             if (view != null) {
                 whiteBoardUtil.setMarkBackground(true, bitmap);
             }
-            whiteBoardUtil.setCurrentMarkBitmap(bitmap);
+            whiteBoardUtil.setCurrentMarkBitmapD(bitmap);
         }
 
         @Override
         public void onWhiteboardStart(String uuid, boolean isMark) {
             // 清空上一次的白板
-            if (whiteBoardUtil.getWhiteBoardview() != null){
+            if (whiteBoardUtil.getWhiteBoardview() != null) {
                 stopWhiteBoard();
             }
             whiteBoardUtil.setMark(isMark);
-            if (getActivity() != null){
+            if (getActivity() != null) {
                 whiteBoardUtil.makeFloatVisible(true);
-                if (!((ZJConferenceActivity)getActivity()).myUUID.equals(uuid)){
+                if (!((ZJConferenceActivity) getActivity()).myUUID.equals(uuid)) {
                     // 如果当前共享白板的不是我
                     whiteBoardUtil.setCurrentStatus(true);
-                }else{
+                } else {
                     whiteBoardUtil.setCurrentStatus(false);
-                    if (!isMark){
+                    if (!isMark) {
                         startWhiteBoardTools(true);
                         whiteBoardUtil.initStartBroad();
-                    }else {
+                    } else {
                         startMarkTools(true);
                         whiteBoardUtil.initStartMark();
                     }
@@ -1900,4 +1942,71 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             showToast(getString(R.string.disconnect_timeout));
         }
     };
+
+    public void switchMark() {
+        handleDisplay(true);
+        WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+        if (view != null) {
+            view.setBackgroundColor(Color.parseColor("#00000000"));
+            whiteBoardUtil.setMarkBackground(false, null);
+            flMarkBackground.setVisibility(View.GONE);
+        }
+        bigView.setVisibility(View.VISIBLE);
+    }
+
+    public void updateMark() {
+        handleDisplay(false);
+        Bitmap backgroundBitmap = null;
+        if (isPicture) {
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(com.example.alan.sdkdemo.util.BitmapUtil.getImage(imagePathList.get(pictureIndex)), 1920, 1080);
+            ;
+        } else if (isPDF) {
+            Log.d("startWhiteBroad", "startOrJoinMark: isPDF");
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
+        }
+        vcrtc.updateWhiteboardImage(backgroundBitmap);
+        Log.d("startWhiteBroad", "update_bitmap:");
+        WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+        if (view != null) {
+            whiteBoardUtil.setMarkBackground(true, backgroundBitmap);
+            flMarkBackground.setVisibility(View.VISIBLE);
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+
+        }
+    }
+
+    public void startMark() {
+        startMarkTools(false);
+    }
+
+    public void joinMark() {
+        if (whiteBoardUtil.getWhiteBoardview() != null) {
+            whiteBoardUtil.showWhiteView();
+
+            whiteBoardUtil.setMarkBackground(true, whiteBoardUtil.getCurrentMarkBitmap());
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            handleDisplay(false);
+            return;
+        }
+        calculateSize();
+        vcrtc.joinWhiteboard(objects -> {
+            WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+            whiteBoardUtil.joinMarkView(whiteBoardView);
+            whiteBoardView.setOnClickListener(v -> {
+                if (isShowBar) {
+                    hideBar();
+                } else {
+                    showBar();
+                }
+            });
+            Log.d("white_join", "justJoinMark: ");
+            flMarkBackground.setVisibility(View.VISIBLE);
+            whiteBoardUtil.setMarkBackground(true, whiteBoardUtil.getCurrentMarkBitmap());
+            whiteBoardView.initByPayloads((Map<Integer, WhiteboardPayload>) objects[0]);
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            whiteBoardUtil.addMarkView((int) whiteWidth, (int) whiteHeight, false);
+            handleDisplay(false);
+        });
+//        bigView.setVisibility(View.GONE);
+    }
 }

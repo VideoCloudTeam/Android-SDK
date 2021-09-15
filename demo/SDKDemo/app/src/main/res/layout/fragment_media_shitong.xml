@@ -22,11 +22,16 @@
         android:layout_height="match_parent">
         <com.example.alan.sdkdemo.widget.ZoomViewPager
             android:id="@+id/vp_share"
+            android:background="@color/black"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone">
-        </com.example.alan.sdkdemo.widget.ZoomViewPager>
-
+            android:visibility="gone"/>
+        <FrameLayout
+            android:id="@+id/fl_mark_background"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:background="@color/black"
+            android:layout_height="match_parent"/>
         <include layout="@layout/whiteboard_layout"/>
     </FrameLayout>
 

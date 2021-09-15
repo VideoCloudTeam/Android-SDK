@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
-import android.widget.RelativeLayout.CENTER_IN_PARENT
 import com.example.alan.sdkdemo.R
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity
 import com.vcrtc.VCRTC
@@ -31,7 +30,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
     private var isExpand = false
     private var whiteBoardView: WhiteBoardView? = null
     private var isSelect = false
-    private var currentMarkBitmap: Bitmap? = null
+    var currentMarkBitmap: Bitmap? = null
 
     // tools
     private lateinit var ivPen: ImageView
@@ -569,7 +568,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
         }
         System.gc()
     }
-    fun setCurrentMarkBitmap(currentMarkBitmap: Bitmap) {
+    fun setCurrentMarkBitmapD(currentMarkBitmap: Bitmap) {
         if (this.currentMarkBitmap != null && !currentMarkBitmap.isRecycled) {
             this.currentMarkBitmap!!.recycle()
             this.currentMarkBitmap = null
@@ -577,4 +576,63 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
         this.currentMarkBitmap = currentMarkBitmap
     }
 
+
+    fun joinMarkView(view: WhiteBoardView) {
+        whiteBoardView = view
+        whiteBoardView?.apply {
+            setPenColor(currentColor)
+            setPenWidth(currentWidth.toFloat())
+            setBackgroundColor(Color.parseColor("#00000000"))
+            setDataCallBack(object : DataCallBack {
+                override fun onPayload(uuid: UUID, whiteboardPayload: WhiteboardPayload, vcCallback: VCCallback) {
+                    vcrtc.addWhiteboardPayload(whiteboardPayload, vcCallback)
+                }
+
+                override fun onDelete(i: Int) {
+                    Log.d("white_join", "joinMarkView onDelete: $i")
+                    vcrtc.deleteWhiteboardPayload(i)
+                    deleteCapture()
+                }
+            })
+        }
+
+    }
+
+    fun addMarkView(whiteWidth: Int, whiteHeight: Int, isVertical: Boolean){
+        whiteBoardView?.apply {
+            val params = FrameLayout.LayoutParams(
+                    whiteWidth, whiteHeight
+            )
+            params.gravity = Gravity.CENTER
+            rlWhiteParent!!.addView(this, rlWhiteParent!!.childCount, params)
+            rlWhiteParent?.visibility = View.VISIBLE
+            frameBackground?.visibility = View.VISIBLE
+            setActionListener(object : WhiteBoardView.ActionListener {
+                override fun onActionDown() {
+                    sendHandler.removeCallbacks(sendRunnable)
+                }
+
+                override fun onActionUp() {
+                    if (llTools.visibility == View.VISIBLE) {
+                        updatePosition()
+                        llTools.visibility = View.GONE
+                    }
+                    sendHandler.postDelayed(sendRunnable, 300)
+                }
+
+            })
+        }
+    }
+
+    private fun deleteCapture() {
+        deleteHandler.removeCallbacks(runnable)
+        deleteHandler.postDelayed(runnable, 500)
+    }
+
+    var deleteHandler = Handler(Looper.getMainLooper())
+    var runnable = Runnable {
+        if (!isJoin) {
+            sendWhiteBoardBitmap(vcrtc)
+        }
+    }
 }

@@ -1167,9 +1167,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
 //            mediaFragment.joinMark();
 //        }
 //
-//        if (mediaShiTongFragment != null) {
-//            mediaShiTongFragment.joinMark();
-//        }
+        if (mediaShiTongFragment != null) {
+            mediaShiTongFragment.joinMark();
+        }
     }
 
     /**
@@ -1182,9 +1182,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
 //        if (mediaFragment != null) {
 //            mediaFragment.startMark();
 //        }
-//        if (mediaShiTongFragment != null) {
-//            mediaShiTongFragment.startMark();
-//        }
+        if (mediaShiTongFragment != null) {
+            mediaShiTongFragment.startMark();
+        }
     }
 
     public void updateMark() {
@@ -1194,9 +1194,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
 //        if (mediaFragment != null) {
 //            mediaFragment.updateMark();
 //        }
-//        if (mediaShiTongFragment != null) {
-//            mediaShiTongFragment.updateMark();
-//        }
+        if (mediaShiTongFragment != null) {
+            mediaShiTongFragment.updateMark();
+        }
     }
 
 
@@ -1207,9 +1207,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
 //        if (mediaFragment != null) {
 //            mediaFragment.switchMark();
 //        }
-//        if (mediaShiTongFragment != null) {
-//            mediaShiTongFragment.switchMark();
-//        }
+        if (mediaShiTongFragment != null) {
+            mediaShiTongFragment.switchMark();
+        }
     }
 
 
