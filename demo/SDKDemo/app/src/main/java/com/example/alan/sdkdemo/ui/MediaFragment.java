@@ -53,6 +53,7 @@ import com.vcrtc.entities.Call;
 import com.vcrtc.entities.MediaStats;
 import com.vcrtc.entities.Participant;
 import com.vcrtc.entities.StatsItemBean;
+import com.vcrtc.entities.WhiteboardPayload;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.utils.PDFUtil;
@@ -1099,6 +1100,41 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
                 toggleMuteAudio();
                 ZJConferenceActivity.joinMuteAudio = false;
             }
+        }
+
+        @Override
+        public void onPresentationSuccess() {
+
+        }
+
+        @Override
+        public void onWhiteboardAddPayload(int cmdid, WhiteboardPayload payload) {
+
+        }
+
+        @Override
+        public void onWhiteboardClearPayload() {
+
+        }
+
+        @Override
+        public void onWhiteboardDeletePayload(int cmdid) {
+
+        }
+
+        @Override
+        public void onWhiteboardImageUpdate(Bitmap bitmap) {
+
+        }
+
+        @Override
+        public void onWhiteboardStart(String uuid, boolean isMark) {
+
+        }
+
+        @Override
+        public void onWhiteboardStop() {
+
         }
 
         @Override

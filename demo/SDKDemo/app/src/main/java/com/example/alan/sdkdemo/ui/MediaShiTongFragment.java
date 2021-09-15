@@ -41,6 +41,7 @@ import android.widget.Toast;
 
 import com.example.alan.sdkdemo.R;
 import com.example.alan.sdkdemo.util.GlideEngine;
+import com.example.alan.sdkdemo.util.WhiteBoardUtil;
 import com.example.alan.sdkdemo.widget.ZoomFrameLayout;
 import com.example.alan.sdkdemo.widget.ZoomViewPager;
 import com.huantansheng.easyphotos.EasyPhotos;
@@ -60,10 +61,12 @@ import com.vcrtc.entities.MediaStats;
 import com.vcrtc.entities.Participant;
 import com.vcrtc.entities.People;
 import com.vcrtc.entities.StatsItemBean;
+import com.vcrtc.entities.WhiteboardPayload;
 import com.vcrtc.listeners.DoubleClickListener;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.PDFUtil;
 import com.vcrtc.utils.VCUtil;
+import com.vcrtc.widget.WhiteBoardView;
 
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.Camera2Enumerator;
@@ -145,6 +148,9 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private Activity mActivity;
     VCRTCView testView;
     private FrameLayout testFrameLayout;
+
+    private WhiteBoardUtil whiteBoardUtil;
+    String whiteBoardUUID = "";
 
     @Override
     public void onAttach(Context context) {
@@ -331,6 +337,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     private void initData() {
         call = ((ZJConferenceActivity) getActivity()).call;
         vcrtc = ((ZJConferenceActivity) getActivity()).vcrtc;
+        whiteBoardUtil = new WhiteBoardUtil(vcrtc, (ZJConferenceActivity) mActivity);
+        whiteBoardUtil.initWhiteBoardView(rootView);
         pdfUtil = new PDFUtil(getActivity(), true, 1920, 1080);
         tvChanel.setText(call.getChannel());
 
@@ -925,6 +933,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     public void toggleShare() {
         if (isShare) {
             imagePathList.clear();
+            stopWhiteBoard();
             stopPresentation();
             ivShare.setSelected(false);
             isShare = false;
@@ -939,6 +948,23 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         }
     }
 
+    private void stopWhiteBoard() {
+        if (mActivity != null){
+            ((ZJConferenceActivity) mActivity).isShowWhite = false;
+            ivShare.setSelected(false);
+            if (!whiteBoardUtil.isJoin()) {
+                vcrtc.stopTwoWayWhiteboard();
+            }
+            whiteBoardUtil.makeFloatVisible(false);
+            if (whiteBoardUtil != null && whiteBoardUtil.getWhiteBoardview() != null) {
+                whiteBoardUtil.resetPosition();
+                whiteBoardUtil.releaseView();
+                whiteBoardUtil.releaseWhiteView();
+            }
+//            flMarkBackground.setVisibility(View.GONE);
+        }
+    }
+
     /**
      * 显示分享pop
      */
@@ -949,11 +975,12 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         popupWindowShare.setOutsideTouchable(true);
         int[] location = new int[2];
         ivShare.getLocationOnScreen(location);
-        popupWindowShare.showAtLocation(ivShare, Gravity.NO_GRAVITY, location[0] - VCUtil.dp2px(getActivity(), 40), location[1] - VCUtil.dp2px(getActivity(), 130));
+        popupWindowShare.showAtLocation(ivShare, Gravity.NO_GRAVITY, location[0] - VCUtil.dp2px(getActivity(), 40), location[1] - VCUtil.dp2px(getActivity(), 170));
 
         TextView tvSharePicture = view.findViewById(R.id.tv_share_picture);
         TextView tvShareFile = view.findViewById(R.id.tv_share_file);
         TextView tvShareScreen = view.findViewById(R.id.tv_share_screen);
+        TextView tvShareWhite = view.findViewById(R.id.tv_share_white_board);
         tvSharePicture.setOnClickListener(v -> {
             GlideEngine.getInstance().getPicture(this);
             popupWindowShare.dismiss();
@@ -975,6 +1002,42 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             vcrtc.sendPresentationScreen();
             popupWindowShare.dismiss();
         });
+        tvShareWhite.setOnClickListener( v -> {
+            startWhiteBoard();
+            popupWindowShare.dismiss();
+        });
+    }
+    /**
+     * 打开白板
+     */
+    float whiteHeight;
+    float whiteWidth;
+    private void startWhiteBoard() {
+        vpShare.setVisibility(View.GONE);
+        rlShareScreen.setVisibility(View.GONE);
+        ivShare.setSelected(true);
+        whiteBoardUtil.setMark(false);
+        ((ZJConferenceActivity) mActivity).isShowWhite = true;
+        isShare = true;
+
+        setUnStick();
+        vcrtc.updateClayout("0:1");
+        calculateSize();
+        Bitmap backgroundBitmap = Bitmap.createBitmap((int) whiteWidth, (int) whiteHeight, Bitmap.Config.RGB_565);
+        backgroundBitmap.eraseColor(Color.WHITE);
+        vcrtc.sendPresentationBitmap(backgroundBitmap, true);
+    }
+
+    private void calculateSize() {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        whiteHeight = dm.heightPixels;
+        whiteWidth = whiteHeight * (16 * 1.0f / 9 * 1.0f);
+        float temp = 0;
+        if (whiteHeight > whiteWidth) {
+            temp = whiteHeight;
+            whiteHeight = whiteWidth;
+            whiteWidth = temp;
+        }
     }
 
     private TextView tvRecord, tvLive, tvViewInView, tvAdditional;
@@ -1385,14 +1448,84 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         refreshUI();
     }
 
+    public void startMarkTools(boolean alreadySuccess){
+
+    }
+
+    public void joinBoard(){
+        if (whiteBoardUtil.getWhiteBoardview() != null) {
+            whiteBoardUtil.showWhiteView();
+            handleDisplay(false);
+        } else {
+            joinWhitBoardTools();
+        }
+    }
+
+    public void joinWhitBoardTools(){
+        if (isAudioModel){return;}
+        calculateSize();
+        WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+        whiteBoardUtil.joinWhiteBoardView(whiteBoardView);
+        whiteBoardView.setOnClickListener(v -> {
+            if (isShowBar) {
+                hideBar();
+            } else {
+                showBar();
+            }
+        });
+        vcrtc.joinWhiteboard(objects -> {
+            whiteBoardView.initByPayloads((Map<Integer, WhiteboardPayload>) objects[0]);
+            whiteBoardUtil.resetPosition();
+            whiteBoardUtil.addWhiteBoardView((int) whiteWidth, (int) whiteHeight);
+            handleDisplay(false);
+        });
+    }
+
+    public void startWhiteBoardTools(boolean alreadySuccess){
+        if (isAudioModel){
+            return;
+        }
+        calculateSize();
+        if (alreadySuccess){
+            WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+            whiteBoardView.setOnClickListener(v -> {
+                if (isShowBar){
+                    hideBar();
+                }else {
+                    showBar();
+                }
+            });
+            whiteBoardUtil.setWhiteBoardView(whiteBoardView);
+            whiteBoardUtil.resetPosition();
+            whiteBoardUtil.addWhiteBoardView(whiteWidth, whiteHeight);
+            handleDisplay(false);
+        }else {
+            Bitmap backgroundBitmap = Bitmap.createBitmap((int) whiteWidth, (int) whiteHeight, Bitmap.Config.RGB_565);
+            backgroundBitmap.eraseColor(Color.WHITE);
+            vcrtc.startTwoWayWhiteboard(backgroundBitmap, false, true);
+        }
+    }
+
+    public void handleDisplay(boolean isShow){
+        llSmallVideo.setVisibility(isShow ? View.VISIBLE: View.GONE);
+    }
+
+
+    Handler sendHandler = new Handler(Looper.getMainLooper());
+
+    Runnable sendRunnable = () -> {
+        Log.d("sendRunnable", ": ");
+        whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
+    };
+    private void sendHandle(){
+        sendHandler.removeCallbacks(sendRunnable);
+        sendHandler.postDelayed(sendRunnable, 300);
+    }
+
     ZJConferenceActivity.MediaCallBack callBack = new ZJConferenceActivity.MediaCallBack() {
 
         @Override
         public void onConnect() {
-//            if (ZJConferenceActivity.bean != null) {
-//                vcrtc.dialOut(ZJConferenceActivity.bean.getUsrCuid(), "auto", ZJConferenceActivity.bean.getUsrNickName(), "guest");
-//            }
-
             if (ZJConferenceActivity.isTurnOn) {
                 timerHandler.postDelayed(runnable, 45000);
             }
@@ -1404,6 +1537,101 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                 toggleMuteAudio();
                 ZJConferenceActivity.joinMuteAudio = false;
             }
+        }
+
+        @Override
+        public void onPresentationSuccess() {
+            if (isPicture || isPDF){
+
+            }else {
+                if (!isShareScreen){
+                    startWhiteBoardTools(false);
+                }
+            }
+        }
+
+        @Override
+        public void onWhiteboardAddPayload(int cmdid, WhiteboardPayload payload) {
+            WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                view.updateByPaload(cmdid, payload);
+                if (whiteBoardUtil.isMark() && !whiteBoardUtil.isJoin()) {
+                    sendHandle();
+                }
+            }
+        }
+
+        @Override
+        public void onWhiteboardClearPayload() {
+            WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                view.clear();
+                if (whiteBoardUtil.isMark() && !whiteBoardUtil.isJoin()) {
+                    sendHandle();
+                }
+            }
+        }
+
+        @Override
+        public void onWhiteboardDeletePayload(int cmdid) {
+            WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                view.deleteByCmdid(cmdid);
+                if (whiteBoardUtil.isMark() && !whiteBoardUtil.isJoin()) {
+                    sendHandle();
+                }
+            }
+        }
+
+        @Override
+        public void onWhiteboardImageUpdate(Bitmap bitmap) {
+            View view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                whiteBoardUtil.setMarkBackground(true, bitmap);
+            }
+            whiteBoardUtil.setCurrentMarkBitmap(bitmap);
+        }
+
+        @Override
+        public void onWhiteboardStart(String uuid, boolean isMark) {
+            // 清空上一次的白板
+            if (whiteBoardUtil.getWhiteBoardview() != null){
+                stopWhiteBoard();
+            }
+            whiteBoardUtil.setMark(isMark);
+            if (getActivity() != null){
+                whiteBoardUtil.makeFloatVisible(true);
+                if (!((ZJConferenceActivity)getActivity()).myUUID.equals(uuid)){
+                    // 如果当前共享白板的不是我
+                    whiteBoardUtil.setCurrentStatus(true);
+                }else{
+                    whiteBoardUtil.setCurrentStatus(false);
+                    if (!isMark){
+                        startWhiteBoardTools(true);
+                        whiteBoardUtil.initStartBroad();
+                    }else {
+                        startMarkTools(true);
+                        whiteBoardUtil.initStartMark();
+                    }
+                }
+            }
+
+
+        }
+
+        @Override
+        public void onWhiteboardStop() {
+            ((ZJConferenceActivity) mActivity).isShowWhite = false;
+            if (whiteBoardUtil != null) {
+                whiteBoardUtil.makeFloatVisible(false);
+                if (whiteBoardUtil.getWhiteBoardview() != null) {
+                    vcrtc.stopTwoWayWhiteboard();
+                    handleDisplay(true);
+                    whiteBoardUtil.releaseWhiteView();
+                    whiteBoardUtil.releaseView();
+                }
+            }
+            whiteBoardUUID = "";
         }
 
         @Override

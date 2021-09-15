@@ -1,4 +1,4 @@
-package com.example.alan.sdkdemo;
+package com.example.alan.sdkdemo.ui;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +9,7 @@ import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.example.alan.sdkdemo.R;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;
 

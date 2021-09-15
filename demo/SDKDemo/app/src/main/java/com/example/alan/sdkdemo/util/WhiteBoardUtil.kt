@@ -1,21 +1,33 @@
 package com.example.alan.sdkdemo.util
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.*
+import android.widget.RelativeLayout.CENTER_IN_PARENT
 import com.example.alan.sdkdemo.R
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity
 import com.vcrtc.VCRTC
+import com.vcrtc.callbacks.VCCallback
+import com.vcrtc.entities.WhiteboardPayload
+import com.vcrtc.webrtc.RTCManager
 import com.vcrtc.widget.WhiteBoardView
+import com.vcrtc.widget.WhiteBoardView.BitmapCallBack
+import com.vcrtc.widget.WhiteBoardView.DataCallBack
+import java.util.*
 
 /**
  * Created by ricardo
  * 9/13/21.
  */
-class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
-    private var isJoin = false
-    private var isMark = true
+class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
+    var isJoin = false
+    var isMark = true
     private var isExpand = false
     private var whiteBoardView: WhiteBoardView? = null
     private var isSelect = false
@@ -56,7 +68,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
 
     var frameBackground: FrameLayout? = null
 
-    private var rlWhiteParent: RelativeLayout? = null
+    private var rlWhiteParent: FrameLayout? = null
     private var currentColor = Color.BLACK
     private var currentWidth = 10
     private val COLOR = 0
@@ -116,7 +128,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
     }
 
     private val whiteToolsListener = View.OnClickListener {
-        when(it.id){
+        when (it.id) {
             R.id.iv_pen -> {
                 if (ivPen.isSelected && llTools.visibility == View.GONE) {
                     if (llClearTools.visibility == View.VISIBLE) {
@@ -125,7 +137,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
                         val lp = floatParent.layoutParams as RelativeLayout.LayoutParams
                         lp.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                         lp.addRule(RelativeLayout.ALIGN_PARENT_TOP)
-                        lp.setMargins(floatParent.left, floatParent.top - DensityUtil.dip2px(context, 86f), 0, 0)
+                        lp.setMargins(floatParent.left, floatParent.top - DensityUtil.dip2px(myContext, 86f), 0, 0)
                         floatParent.layoutParams = lp
                     }
                     llTools.visibility = View.VISIBLE
@@ -157,7 +169,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
                         val lp = floatParent.layoutParams as RelativeLayout.LayoutParams
                         lp.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                         lp.addRule(RelativeLayout.ALIGN_PARENT_TOP)
-                        lp.setMargins(floatParent.left, floatParent.top - DensityUtil.dip2px(context, 86f), 0, 0)
+                        lp.setMargins(floatParent.left, floatParent.top - DensityUtil.dip2px(myContext, 86f), 0, 0)
                         floatParent.layoutParams = lp
                     }
                     if (isJoin) {
@@ -177,7 +189,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
                 resetToolsPosition()
                 if (whiteBoardView != null) {
                     val bitmap = com.vcrtc.utils.BitmapUtil.createBitmapFromView(frameBackground)
-                    BitmapUtil.saveBitmapInDCIM(context, bitmap, System.currentTimeMillis().toString() + "" + ".jpg")
+                    BitmapUtil.saveBitmapInDCIM(myContext, bitmap, System.currentTimeMillis().toString() + "" + ".jpg")
                 }
             }
             R.id.iv_black -> setColor(ivBlack, "#000000")
@@ -203,7 +215,84 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
                 resetToolsPosition()
                 whiteBoardView?.clearPayload()
             }
+            R.id.iv_mark_float -> {
+                isSelect = !isSelect
+                if (isSelect) {
+                    llBaseToolsBackground.background = myContext.getResources().getDrawable(R.drawable.background_float)
+                    llBaseTools.visibility = View.VISIBLE
+                    if (isJoin) {
+//                        context.joinBroad()
+                    }
+                } else {
+                    llBaseToolsBackground.background = myContext.getResources().getDrawable(R.drawable.background_float_none)
+                    llBaseTools.visibility = View.GONE
+                    llTools.visibility = View.GONE
+                    if (isJoin || isMark) {
+                        releaseWhiteView()
+                    }
+                }
+                ivMarkFloat.isSelected = isSelect
+            }
+            R.id.float_parent -> {
+                floatClick()
+            }
         }
+    }
+
+    private fun floatClick() {
+        isSelect = !isSelect
+        if (!isExpand) {
+            isExpand = true
+            llBaseToolsBackground.background = myContext.resources.getDrawable(R.drawable.background_float)
+            llBaseTools.visibility = View.VISIBLE
+            if (isJoin) {
+                if (isMark) {
+                    myContext.joinMark()
+                } else {
+                    myContext.joinBoard()
+                }
+            } else {
+                if (isMark) {
+                    if (whiteBoardView == null) {
+                        myContext.startMark()
+                    } else {
+                        whiteBoardView?.setTouchabled(true)
+                        myContext.updateMark()
+                    }
+                }
+            }
+        } else {
+            isExpand = false
+            llBaseToolsBackground.background = myContext.resources.getDrawable(R.drawable.background_float_none)
+            llBaseTools.visibility = View.GONE
+            if (llTools.visibility == View.VISIBLE) {
+                updatePosition()
+                llTools.visibility = View.GONE
+            }
+            if (llClearTools.visibility == View.VISIBLE) {
+                updatePosition()
+                llClearTools.visibility = View.GONE
+            }
+            if (isJoin) {
+                hideWhiteView()
+            } else {
+                if (isMark) {
+                    // 收起工具栏
+                    whiteBoardView?.apply {
+                        whiteBoardView?.setTouchabled(false)
+                        // 设置白板透明背景 && 收掉黑色背景
+                        myContext.switchMark()
+                    }
+
+                }
+            }
+        }
+        ivMarkFloat.isSelected = isSelect
+    }
+
+    fun hideWhiteView() {
+        rlWhiteParent!!.visibility = View.GONE
+        myContext.handleDisplay(true)
     }
 
 
@@ -211,7 +300,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
         val lp = floatParent.layoutParams as RelativeLayout.LayoutParams
         lp.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
         lp.addRule(RelativeLayout.ALIGN_PARENT_TOP)
-        lp.setMargins(floatParent.left, floatParent.top + DensityUtil.dip2px(context, 86f), 0, 0)
+        lp.setMargins(floatParent.left, floatParent.top + DensityUtil.dip2px(myContext, 86f), 0, 0)
         floatParent.layoutParams = lp
     }
 
@@ -241,7 +330,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
     }
 
     private fun refreshWhiteTools(type: Int) {
-        when(type){
+        when (type) {
             COLOR -> {
                 ivBlack.isSelected = false
                 ivYellow.isSelected = false
@@ -263,5 +352,229 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val context: ZJConferenceActivity) {
         }
     }
 
+    fun releaseWhiteView() {
+        rlWhiteParent!!.removeView(whiteBoardView)
+        rlWhiteParent!!.visibility = View.GONE
+        whiteBoardView = null
+        resetPen()
+//        context.hideOrShow(true)
+    }
+
+    private fun resetPen() {
+        refreshWhiteTools(TOOLS)
+        refreshWhiteTools(COLOR)
+        refreshWhiteTools(WIDTH)
+        ivPen.isSelected = true
+        ivRegular.isSelected = true
+        ivBlack.isSelected = true
+        currentColor = Color.BLACK
+        currentWidth = 10
+    }
+
+    fun getWhiteBoardview(): WhiteBoardView? {
+        return whiteBoardView
+    }
+
+    fun makeFloatVisible(isVisible: Boolean) {
+        if (isVisible) {
+            if (floatParent.visibility != View.VISIBLE) {
+                ivMarkFloat.visibility = View.VISIBLE
+                floatParent.visibility = View.VISIBLE
+                isSelect = false
+                ivMarkFloat.isSelected = false
+                isExpand = false
+            }
+        } else {
+            ivMarkFloat.visibility = View.GONE
+            llBaseTools.visibility = View.GONE
+            floatParent.visibility = View.GONE
+            llTools.visibility = View.GONE
+            llBaseToolsBackground.background = myContext.resources.getDrawable(R.drawable.background_float_none)
+        }
+    }
+
+    fun setCurrentStatus(isJoin: Boolean) {
+        this.isJoin = isJoin
+    }
+
+
+    fun convertViewToBitmap(view: View): Bitmap? {
+        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.RGB_565)
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+        return bitmap
+    }
+
+    fun sendWhiteBoardBitmap(vcrtc: VCRTC) {
+        val bitmap = com.vcrtc.utils.BitmapUtil.createBitmapFromView(frameBackground)
+        if (bitmap != null) {
+            if (RTCManager.isIsShitongPlatform()) {
+                vcrtc.sendPresentationBitmap(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080), true)
+            } else {
+                vcrtc.sendPresentationImage(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080))
+            }
+        }
+    }
+
+    fun initStartBroad() {
+        isSelect = true
+        ivMarkFloat.isSelected = true
+        llBaseToolsBackground.background = myContext.resources.getDrawable(R.drawable.background_float)
+        llBaseTools.visibility = View.VISIBLE
+        isExpand = true
+    }
+
+    fun initStartMark() {
+        isSelect = false
+        ivMarkFloat.isSelected = false
+        llBaseToolsBackground.background = myContext.resources.getDrawable(R.drawable.background_float_none)
+        llBaseTools.visibility = View.GONE
+        whiteBoardView?.setTouchabled(false)
+        isExpand = false
+    }
+
+    private fun sendBitmap() {
+        if (!isJoin) {
+            val bitmap = convertViewToBitmap(frameBackground!!)
+            if (RTCManager.isIsShitongPlatform()) {
+                vcrtc.sendPresentationBitmap(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080), true)
+            } else {
+                vcrtc.sendPresentationImage(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080))
+            }
+        }
+    }
+
+
+    fun resetPosition() {
+        val lp = floatParent.layoutParams as RelativeLayout.LayoutParams
+        lp.removeRule(RelativeLayout.ALIGN_PARENT_TOP)
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+        lp.setMargins(DensityUtil.dpToPx(myContext, 20), 0, 0, DensityUtil.dpToPx(myContext, 80))
+        floatParent.layoutParams = lp
+    }
+
+    fun setWhiteBoardView(view: WhiteBoardView) {
+        Log.d("white_join", "setWhiteBoardView: $view")
+
+        whiteBoardView = view
+        whiteBoardView?.apply {
+            setBackgroundColor(Color.WHITE)
+            setPenWidth(currentWidth.toFloat())
+            setPenColor(currentColor)
+            setDataCallBack(object : DataCallBack {
+                override fun onPayload(uuid: UUID, whiteboardPayload: WhiteboardPayload, vcCallback: VCCallback) {
+                    vcrtc.addWhiteboardPayload(whiteboardPayload, vcCallback)
+                }
+
+                override fun onDelete(i: Int) {
+                    vcrtc.deleteWhiteboardPayload(i)
+                    Log.d("white_join", "setWhiteBoardView: $view")
+                }
+            })
+            setBitmapCallBack(BitmapCallBack { bitmap ->
+                Log.d("white_join", "onActionUp: send white")
+                if (RTCManager.isIsShitongPlatform()) {
+                    vcrtc.sendPresentationBitmap(bitmap, true)
+                } else {
+                    vcrtc.sendPresentationImage(bitmap)
+                }
+            })
+        }
+
+    }
+
+    fun addWhiteBoardView(whiteWidth: Float, whiteHeight: Float) {
+
+        whiteBoardView?.apply {
+            val params = FrameLayout.LayoutParams(
+                    whiteWidth.toInt(), whiteHeight.toInt()
+            )
+            params.gravity = Gravity.CENTER
+            setBackgroundResource(R.color.white)
+            rlWhiteParent!!.addView(this, rlWhiteParent!!.childCount, params)
+            rlWhiteParent!!.visibility = View.VISIBLE
+            setActionListener(object : WhiteBoardView.ActionListener {
+                override fun onActionDown() {}
+                override fun onActionUp() {
+                    if (llTools.visibility == View.VISIBLE) {
+                        updatePosition()
+                        llTools.visibility = View.GONE
+                    }
+                }
+            })
+        }
+    }
+
+    fun joinWhiteBoardView(view: WhiteBoardView) {
+        Log.d("white_join", "joinWhiteBoardView: $view")
+        whiteBoardView = view
+        whiteBoardView?.apply {
+            setBackgroundColor(Color.WHITE)
+            setPenColor(currentColor)
+            setPenWidth(currentWidth.toFloat())
+            setDataCallBack(object : DataCallBack {
+                override fun onPayload(uuid: UUID, whiteboardPayload: WhiteboardPayload, vcCallback: VCCallback) {
+                    vcrtc.addWhiteboardPayload(whiteboardPayload, vcCallback)
+                }
+
+                override fun onDelete(i: Int) {
+                    Log.d("white_join", "joinWhiteBoardView onDelete: $i")
+                    vcrtc.deleteWhiteboardPayload(i)
+                }
+            })
+        }
+
+    }
+
+
+    fun releaseView() {
+        if (currentMarkBitmap != null && !currentMarkBitmap!!.isRecycled) {
+            currentMarkBitmap!!.recycle()
+            currentMarkBitmap = null
+        }
+        if (llClearTools.visibility == View.VISIBLE) {
+            llClearTools.visibility = View.GONE
+        }
+        if (llTools.visibility == View.VISIBLE) {
+            llTools.visibility = View.GONE
+        }
+        isExpand = false
+        ivMarkBackground.setImageDrawable(null)
+        sendHandler.removeCallbacks(sendRunnable)
+    }
+
+    fun showWhiteView() {
+        rlWhiteParent!!.visibility = View.VISIBLE
+        frameBackground!!.visibility = View.VISIBLE
+    }
+
+    private val sendHandler = Handler(Looper.getMainLooper())
+    private val sendRunnable = Runnable { sendBitmap() }
+
+    /**
+     * 为标注设置背景
+     * @param isVisible
+     * @param bitmap
+     */
+    fun setMarkBackground(isVisible: Boolean, bitmap: Bitmap?) {
+        if (isVisible) {
+            if (isMark) {
+                ivMarkBackground.visibility = View.VISIBLE
+                if (bitmap != null && !bitmap.isRecycled) {
+                    ivMarkBackground.setImageBitmap(bitmap)
+                }
+            }
+        } else {
+            ivMarkBackground.visibility = View.GONE
+        }
+        System.gc()
+    }
+    fun setCurrentMarkBitmap(currentMarkBitmap: Bitmap) {
+        if (this.currentMarkBitmap != null && !currentMarkBitmap.isRecycled) {
+            this.currentMarkBitmap!!.recycle()
+            this.currentMarkBitmap = null
+        }
+        this.currentMarkBitmap = currentMarkBitmap
+    }
 
 }

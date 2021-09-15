@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.example.alan.sdkdemo.contact.ContactActivity;
 import com.example.alan.sdkdemo.contact.SPUtil;
+import com.example.alan.sdkdemo.ui.SettingActivity;
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;

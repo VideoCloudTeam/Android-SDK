@@ -43,6 +43,7 @@ import com.vcrtc.entities.ConferenceStatus;
 import com.vcrtc.entities.ErrorCode;
 import com.vcrtc.entities.Participant;
 import com.vcrtc.entities.Stage;
+import com.vcrtc.entities.WhiteboardPayload;
 import com.vcrtc.listeners.VCRTCListener;
 import com.vcrtc.listeners.VCRTCListenerImpl;
 import com.vcrtc.utils.VCAudioManager;
@@ -115,7 +116,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
     static boolean isTurnOn;
 
-
+    public boolean isShowWhite = false;
 
 
 
@@ -1016,12 +1017,65 @@ public class ZJConferenceActivity extends AppCompatActivity {
         @Override
         public void onPresentationShareState(boolean isSuccess, String reason) {
             super.onPresentationShareState(isSuccess, reason);
-
+            runOnUiThread(() -> {
+                if (isSuccess){
+                    mediaCallBack.onPresentationSuccess();
+                }else {
+                    vcrtc.stopPresentation();
+                    if (mediaSimulcastFragment != null) {
+                        mediaSimulcastFragment.toggleShare();
+                    }
+                    if (mediaFragment != null) {
+                        mediaFragment.toggleShare();
+                    }
+                    if (mediaShiTongFragment != null) {
+                        mediaShiTongFragment.toggleShare();
+                    }
+                }
+            });
+        }
+        private String whiteUUID = "";
+        @Override
+        public void onWhiteboardStart(String uuid, boolean isMark) {
+            super.onWhiteboardStart(uuid, isMark);
+            if (!whiteUUID.equals(uuid)) {
+                whiteUUID = uuid;
+                mediaCallBack.onWhiteboardStart(uuid, isMark);
+            }
+            isShowWhite = true;
         }
 
-        ;
+        @Override
+        public void onWhiteboardImageUpdate(Bitmap bitmap) {
+            super.onWhiteboardImageUpdate(bitmap);
+            mediaCallBack.onWhiteboardImageUpdate(bitmap);
+        }
 
+        @Override
+        public void onWhiteboardStop() {
+            super.onWhiteboardStop();
+            whiteUUID = "";
+            mediaCallBack.onWhiteboardStop();
+            isShowWhite = false;
+        }
 
+        @Override
+        public void onWhiteboardAddPayload(int cmdid, WhiteboardPayload payload) {
+            super.onWhiteboardAddPayload(cmdid, payload);
+            mediaCallBack.onWhiteboardAddPayload(cmdid, payload);
+        }
+
+        @Override
+        public void onWhiteboardClearPayload() {
+            super.onWhiteboardClearPayload();
+            mediaCallBack.onWhiteboardClearPayload();
+        }
+
+        @Override
+        public void onWhiteboardDeletePayload(int cmdid) {
+            super.onWhiteboardDeletePayload(cmdid);
+            mediaCallBack.onWhiteboardDeletePayload(cmdid);
+        }
     };
     private MediaCallBack mediaCallBack;
     private ConferenceCallBack conferenceCallBack;
@@ -1071,6 +1125,20 @@ public class ZJConferenceActivity extends AppCompatActivity {
         void onConnect();
 
         void onCallConnect();
+
+        void onPresentationSuccess();
+
+        void onWhiteboardAddPayload(int cmdid, WhiteboardPayload payload);
+
+        void onWhiteboardClearPayload();
+
+        void onWhiteboardDeletePayload(int cmdid);
+
+        void onWhiteboardImageUpdate(Bitmap bitmap);
+
+        void onWhiteboardStart(String uuid, boolean isMark);
+
+        void onWhiteboardStop();
     }
 
     public interface ConferenceCallBack {
@@ -1085,5 +1153,84 @@ public class ZJConferenceActivity extends AppCompatActivity {
         void onConferenceUpdate(ConferenceStatus status);
 
         void onRoleUpdate(String role);
+    }
+
+
+    /**
+     * 加入白板
+     */
+    public void joinMark() {
+//        if (mediaSimulcastFragment != null) {
+//            mediaSimulcastFragment.joinMark();
+//        }
+//        if (mediaFragment != null) {
+//            mediaFragment.joinMark();
+//        }
+//
+//        if (mediaShiTongFragment != null) {
+//            mediaShiTongFragment.joinMark();
+//        }
+    }
+
+    /**
+     * 发起标注
+     */
+    public void startMark() {
+//        if (mediaSimulcastFragment != null) {
+//            mediaSimulcastFragment.startMark();
+//        }
+//        if (mediaFragment != null) {
+//            mediaFragment.startMark();
+//        }
+//        if (mediaShiTongFragment != null) {
+//            mediaShiTongFragment.startMark();
+//        }
+    }
+
+    public void updateMark() {
+//        if (mediaSimulcastFragment != null) {
+//            mediaSimulcastFragment.updateMark();
+//        }
+//        if (mediaFragment != null) {
+//            mediaFragment.updateMark();
+//        }
+//        if (mediaShiTongFragment != null) {
+//            mediaShiTongFragment.updateMark();
+//        }
+    }
+
+
+    public void switchMark() {
+//        if (mediaSimulcastFragment != null) {
+//            mediaSimulcastFragment.switchMark();
+//        }
+//        if (mediaFragment != null) {
+//            mediaFragment.switchMark();
+//        }
+//        if (mediaShiTongFragment != null) {
+//            mediaShiTongFragment.switchMark();
+//        }
+    }
+
+
+    /**
+     * 加入白板
+     */
+    public void joinBoard() {
+//        if (mediaSimulcastFragment != null) {
+//            mediaSimulcastFragment.joinBroad();
+//        }
+//        if (mediaFragment != null) {
+//            mediaFragment.joinBroad();
+//        }
+        if (mediaShiTongFragment != null) {
+            mediaShiTongFragment.joinBoard();
+        }
+    }
+
+    public void handleDisplay(boolean isShow){
+        if (mediaShiTongFragment != null) {
+            mediaShiTongFragment.handleDisplay(isShow);
+        }
     }
 }
