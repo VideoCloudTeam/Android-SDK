@@ -31,7 +31,7 @@
             android:process=":media"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/ProcessStyle" />
-        <activity android:name=".SettingActivity" />
+        <activity android:name=".ui.SettingActivity" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"

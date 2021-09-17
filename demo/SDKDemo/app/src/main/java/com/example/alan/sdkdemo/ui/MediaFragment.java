@@ -695,6 +695,8 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
         TextView tvSharePicture = view.findViewById(R.id.tv_share_picture);
         TextView tvShareFile = view.findViewById(R.id.tv_share_file);
         TextView tvShareScreen = view.findViewById(R.id.tv_share_screen);
+        view.findViewById(R.id.tv_share_white_board).setVisibility(View.GONE);
+
 
         tvSharePicture.setOnClickListener(v -> {
             GlideEngine.getInstance().getPicture(this);

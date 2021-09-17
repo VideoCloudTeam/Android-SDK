@@ -289,7 +289,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
         ivMarkFloat.isSelected = isSelect
     }
 
-    fun hideWhiteView() {
+    private fun hideWhiteView() {
         rlWhiteParent!!.visibility = View.GONE
         myContext.handleDisplay(true)
     }
@@ -405,13 +405,9 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
     }
 
     fun sendWhiteBoardBitmap(vcrtc: VCRTC) {
-        val bitmap = com.vcrtc.utils.BitmapUtil.createBitmapFromView(frameBackground)
+        val bitmap = convertViewToBitmap(frameBackground!!)
         if (bitmap != null) {
-            if (RTCManager.isIsShitongPlatform()) {
-                vcrtc.sendPresentationBitmap(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080), true)
-            } else {
-                vcrtc.sendPresentationImage(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080))
-            }
+            vcrtc.sendPresentation(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080))
         }
     }
 
@@ -435,11 +431,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
     private fun sendBitmap() {
         if (!isJoin) {
             val bitmap = convertViewToBitmap(frameBackground!!)
-            if (RTCManager.isIsShitongPlatform()) {
-                vcrtc.sendPresentationBitmap(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080), true)
-            } else {
-                vcrtc.sendPresentationImage(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080))
-            }
+            vcrtc.sendPresentation(BitmapUtil.formatBitmap16_9(bitmap, 1920, 1080))
         }
     }
 
@@ -467,16 +459,10 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
 
                 override fun onDelete(i: Int) {
                     vcrtc.deleteWhiteboardPayload(i)
-                    Log.d("white_join", "setWhiteBoardView: $view")
                 }
             })
             setBitmapCallBack(BitmapCallBack { bitmap ->
-                Log.d("white_join", "onActionUp: send white")
-                if (RTCManager.isIsShitongPlatform()) {
-                    vcrtc.sendPresentationBitmap(bitmap, true)
-                } else {
-                    vcrtc.sendPresentationImage(bitmap)
-                }
+                vcrtc.sendPresentation(bitmap)
             })
         }
 
@@ -589,7 +575,6 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
                 }
 
                 override fun onDelete(i: Int) {
-                    Log.d("white_join", "joinMarkView onDelete: $i")
                     vcrtc.deleteWhiteboardPayload(i)
                     deleteCapture()
                 }
@@ -617,7 +602,9 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
                         updatePosition()
                         llTools.visibility = View.GONE
                     }
-                    sendHandler.postDelayed(sendRunnable, 300)
+                    if (!isJoin){
+                        sendHandler.postDelayed(sendRunnable, 300)
+                    }
                 }
 
             })

@@ -916,6 +916,7 @@ public class ZJConferenceActivity extends AppCompatActivity {
         @Override
         public void onRoleUpdate(String role) {
             isHost = role.equals("HOST");
+            call.setHost(isHost);
             if (mediaCallBack != null) {
                 mediaCallBack.onRoleUpdate(role);
             }
@@ -1160,9 +1161,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
      * 加入白板
      */
     public void joinMark() {
-//        if (mediaSimulcastFragment != null) {
-//            mediaSimulcastFragment.joinMark();
-//        }
+        if (mediaSimulcastFragment != null) {
+            mediaSimulcastFragment.joinMark();
+        }
 //        if (mediaFragment != null) {
 //            mediaFragment.joinMark();
 //        }
@@ -1176,9 +1177,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
      * 发起标注
      */
     public void startMark() {
-//        if (mediaSimulcastFragment != null) {
-//            mediaSimulcastFragment.startMark();
-//        }
+        if (mediaSimulcastFragment != null) {
+            mediaSimulcastFragment.startMark();
+        }
 //        if (mediaFragment != null) {
 //            mediaFragment.startMark();
 //        }
@@ -1188,9 +1189,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
     }
 
     public void updateMark() {
-//        if (mediaSimulcastFragment != null) {
-//            mediaSimulcastFragment.updateMark();
-//        }
+        if (mediaSimulcastFragment != null) {
+            mediaSimulcastFragment.updateMark();
+        }
 //        if (mediaFragment != null) {
 //            mediaFragment.updateMark();
 //        }
@@ -1201,9 +1202,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
 
 
     public void switchMark() {
-//        if (mediaSimulcastFragment != null) {
-//            mediaSimulcastFragment.switchMark();
-//        }
+        if (mediaSimulcastFragment != null) {
+            mediaSimulcastFragment.switchMark();
+        }
 //        if (mediaFragment != null) {
 //            mediaFragment.switchMark();
 //        }
@@ -1217,9 +1218,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
      * 加入白板
      */
     public void joinBoard() {
-//        if (mediaSimulcastFragment != null) {
-//            mediaSimulcastFragment.joinBroad();
-//        }
+        if (mediaSimulcastFragment != null) {
+            mediaSimulcastFragment.joinBoard();
+        }
 //        if (mediaFragment != null) {
 //            mediaFragment.joinBroad();
 //        }
@@ -1231,6 +1232,9 @@ public class ZJConferenceActivity extends AppCompatActivity {
     public void handleDisplay(boolean isShow){
         if (mediaShiTongFragment != null) {
             mediaShiTongFragment.handleDisplay(isShow);
+        }
+        if (mediaSimulcastFragment != null) {
+            mediaSimulcastFragment.handleDisplay(isShow);
         }
     }
 }

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
@@ -12,6 +13,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -37,6 +39,7 @@ import android.widget.Toast;
 
 import com.example.alan.sdkdemo.R;
 import com.example.alan.sdkdemo.util.GlideEngine;
+import com.example.alan.sdkdemo.util.WhiteBoardUtil;
 import com.example.alan.sdkdemo.widget.ZoomFrameLayout;
 import com.example.alan.sdkdemo.widget.ZoomImageView;
 import com.huantansheng.easyphotos.EasyPhotos;
@@ -62,6 +65,7 @@ import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.utils.PDFUtil;
 import com.vcrtc.utils.VCUtil;
+import com.vcrtc.widget.WhiteBoardView;
 
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.Camera2Enumerator;
@@ -69,6 +73,7 @@ import org.webrtc.CameraEnumerator;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -131,6 +136,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
     private ImageView ivWebClose;
     private boolean isWhiteB = false;
     private Activity mActivity;
+    private FrameLayout flMarkBackground;
 
     @Override
     public void onAttach(Context context) {
@@ -179,6 +185,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         ivAudioMedol = rootView.findViewById(R.id.iv_audio_model);
         ivShare = rootView.findViewById(R.id.iv_share);
         ivParticipants = rootView.findViewById(R.id.iv_participants);
+        flMarkBackground = rootView.findViewById(R.id.fl_mark_background);
         ivMore = rootView.findViewById(R.id.iv_more);
         ivHangup = rootView.findViewById(R.id.iv_hangup);
         ivPicture = rootView.findViewById(R.id.iv_picture);
@@ -242,7 +249,12 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
             @Override
             public void onPageSelected(int position) {
                 pictureIndex = position;
-                sendSharePicture();
+                if (isPDF) {
+//                    if (pdfBitmap != null && !pdfBitmap.isRecycled()) {
+//                        pdfBitmap.recycle();
+//                    }
+                    pdfBitmap = pdfUtil.openPage(pictureIndex);
+                }
             }
 
             @Override
@@ -250,6 +262,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
                 switch (state) {
                     case ViewPager.SCROLL_STATE_IDLE:
                         //无动作、初始状态
+                        sendSharePicture();
                         if (positionPixels == 0) {
                             showToast(getString(R.string.toast_slippery));
                         }
@@ -271,6 +284,8 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
     private void initData() {
         call = ((ZJConferenceActivity) Objects.requireNonNull(getActivity())).call;
         vcrtc = ((ZJConferenceActivity) getActivity()).vcrtc;
+        whiteBoardUtil = new WhiteBoardUtil(vcrtc, (ZJConferenceActivity) mActivity);
+        whiteBoardUtil.initWhiteBoardView(rootView);
         pdfUtil = new PDFUtil(getActivity(), true, 1920, 1080);
 
         tvChanel.setText(call.getChannel());
@@ -838,6 +853,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
     public void toggleShare() {
         if (isShare) {
             imagePathList.clear();
+            stopWhiteBoard();
             stopPresentation();
             ivShare.setSelected(false);
             isShare = false;
@@ -853,13 +869,14 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         TextView tvSharePicture = view.findViewById(R.id.tv_share_picture);
         TextView tvShareFile = view.findViewById(R.id.tv_share_file);
         TextView tvShareScreen = view.findViewById(R.id.tv_share_screen);
+        TextView tvShareWhite = view.findViewById(R.id.tv_share_white_board);
         popupWindowShare = new PopupWindow(view, VCUtil.dp2px(getActivity(), 120), RelativeLayout.LayoutParams.WRAP_CONTENT, true);
         popupWindowShare.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popupWindowShare.setOutsideTouchable(true);
         int[] location = new int[2];
         ivShare.getLocationOnScreen(location);
 
-        popupWindowShare.showAtLocation(ivShare, Gravity.NO_GRAVITY, location[0] - VCUtil.dp2px(getActivity(), 40), location[1] - VCUtil.dp2px(getActivity(), 130));
+        popupWindowShare.showAtLocation(ivShare, Gravity.NO_GRAVITY, location[0] - VCUtil.dp2px(getActivity(), 40), location[1] - VCUtil.dp2px(getActivity(), 170));
 
 
         tvSharePicture.setOnClickListener(v -> {
@@ -881,6 +898,11 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
 
         tvShareScreen.setOnClickListener(v -> {
             vcrtc.sendPresentationScreen();
+            popupWindowShare.dismiss();
+        });
+
+        tvShareWhite.setOnClickListener(v -> {
+            startWhiteBoard();
             popupWindowShare.dismiss();
         });
     }
@@ -1016,7 +1038,7 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
 
                     @Override
                     public void onCutBitmap(Bitmap bitmap) {
-                        vcrtc.sendPresentationBitmap(bitmap);
+                        vcrtc.sendPresentation(bitmap);
                     }
                 });
                 vpShare.setAdapter(viewPagerAdapter);
@@ -1051,15 +1073,22 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         }
     }
 
+    private Map<Integer, Bitmap> pictureMap = new HashMap<>();
     private void sendSharePicture() {
-        Bitmap bitmap = null;
-        if (isPicture){
-            bitmap = BitmapUtil.formatBitmap16_9(imagePathList.get(pictureIndex), 1920, 1080);
-        }else if (isPDF){
-            bitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
-        }
-        if (bitmap != null){
-            vcrtc.sendPresentationImage(bitmap);
+        if (isPicture) {
+            Bitmap bitmap = pictureMap.get(pictureIndex);
+            if (bitmap == null) {
+                pictureMap.put(pictureIndex, com.example.alan.sdkdemo.util.BitmapUtil.getImage(imagePathList.get(pictureIndex)));
+                bitmap = pictureMap.get(pictureIndex);
+            }
+            whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
+            if (!whiteBoardUtil.isJoin() && whiteBoardUtil.getWhiteBoardview() != null) {
+                vcrtc.updateWhiteboardImage(com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9_No_recycle(bitmap, 1920, 1080));
+            }
+        } else if (isPDF) {
+            whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
+            vcrtc.updateWhiteboardImage(com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9_No_recycle(pdfBitmap, 1920, 1080));
+
         }
     }
 
@@ -1288,37 +1317,95 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
 
         @Override
         public void onPresentationSuccess() {
-
+            if (isPicture || isPDF) {
+                startMarkTools(false);
+            } else {
+                if (!isShareScreen) {
+                    startWhiteBoardTools(false);
+                }
+            }
         }
 
         @Override
         public void onWhiteboardAddPayload(int cmdid, WhiteboardPayload payload) {
-
+            WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                view.updateByPaload(cmdid, payload);
+                if (whiteBoardUtil.isMark() && !whiteBoardUtil.isJoin()) {
+                    sendHandle();
+                }
+            }
         }
 
         @Override
         public void onWhiteboardClearPayload() {
-
+            WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                view.clear();
+                if (whiteBoardUtil.isMark() && !whiteBoardUtil.isJoin()) {
+                    sendHandle();
+                }
+            }
         }
 
         @Override
         public void onWhiteboardDeletePayload(int cmdid) {
-
+            WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                view.deleteByCmdid(cmdid);
+                if (whiteBoardUtil.isMark() && !whiteBoardUtil.isJoin()) {
+                    sendHandle();
+                }
+            }
         }
 
         @Override
         public void onWhiteboardImageUpdate(Bitmap bitmap) {
-
+            View view = whiteBoardUtil.getWhiteBoardview();
+            if (view != null) {
+                whiteBoardUtil.setMarkBackground(true, bitmap);
+            }
+            whiteBoardUtil.setCurrentMarkBitmapD(bitmap);
         }
 
         @Override
         public void onWhiteboardStart(String uuid, boolean isMark) {
-
+            // 清空上一次的白板
+            if (whiteBoardUtil.getWhiteBoardview() != null) {
+                stopWhiteBoard();
+            }
+            whiteBoardUtil.setMark(isMark);
+            if (getActivity() != null) {
+                whiteBoardUtil.makeFloatVisible(true);
+                if (!uuid.equals(((ZJConferenceActivity) getActivity()).myUUID)) {
+                    // 如果当前共享白板的不是我
+                    whiteBoardUtil.setCurrentStatus(true);
+                } else {
+                    whiteBoardUtil.setCurrentStatus(false);
+                    if (!isMark) {
+                        startWhiteBoardTools(true);
+                        whiteBoardUtil.initStartBroad();
+                    } else {
+                        startMarkTools(true);
+                        whiteBoardUtil.initStartMark();
+                    }
+                }
+            }
         }
 
         @Override
         public void onWhiteboardStop() {
-
+            ((ZJConferenceActivity) mActivity).isShowWhite = false;
+            if (whiteBoardUtil != null) {
+                whiteBoardUtil.makeFloatVisible(false);
+                if (whiteBoardUtil.getWhiteBoardview() != null) {
+                    vcrtc.stopTwoWayWhiteboard();
+                    handleDisplay(true);
+                    whiteBoardUtil.releaseWhiteView();
+                    whiteBoardUtil.releaseView();
+                }
+            }
+            whiteBoardUUID = "";
         }
 
 
@@ -1605,6 +1692,217 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
         }
 
     };
+
+    private WhiteBoardUtil whiteBoardUtil;
+    float whiteHeight;
+    float whiteWidth;
+    String whiteBoardUUID = "";
+    private void startWhiteBoard() {
+        vpShare.setVisibility(View.GONE);
+        rlShareScreen.setVisibility(View.GONE);
+        ivShare.setSelected(true);
+        whiteBoardUtil.setMark(false);
+        ((ZJConferenceActivity) mActivity).isShowWhite = true;
+        isShare = true;
+
+        setUnStick();
+        vcrtc.updateClayout("0:1");
+        calculateSize();
+        Bitmap backgroundBitmap = Bitmap.createBitmap((int) whiteWidth, (int) whiteHeight, Bitmap.Config.RGB_565);
+        backgroundBitmap.eraseColor(Color.WHITE);
+        vcrtc.sendPresentation(backgroundBitmap);
+    }
+
+    private void calculateSize() {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        whiteHeight = dm.heightPixels;
+        whiteWidth = whiteHeight * (16 * 1.0f / 9 * 1.0f);
+        float temp = 0;
+        if (whiteHeight > whiteWidth) {
+            temp = whiteHeight;
+            whiteHeight = whiteWidth;
+            whiteWidth = temp;
+        }
+    }
+
+    public void startMarkTools(boolean alreadySuccess) {
+        Bitmap backgroundBitmap = null;
+        calculateSize();
+        if (isPicture) {
+            if (imagePathList.size() == 0) {
+                return;
+            }
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(com.example.alan.sdkdemo.util.BitmapUtil.getImage(imagePathList.get(pictureIndex)), 1920, 1080);
+        } else if (isPDF) {
+            if (pdfBitmap == null) {
+                return;
+            }
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
+        }
+        if (alreadySuccess){
+            WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+            whiteBoardView.setOnClickListener(v -> {
+                if (isShowBar) {
+                    hideBar();
+                } else {
+                    showBar();
+                }
+            });
+            whiteBoardUtil.joinMarkView(whiteBoardView);
+            whiteBoardUtil.addMarkView((int) whiteWidth, (int) whiteHeight, false);
+        }else {
+
+            vcrtc.sendPresentation(backgroundBitmap);
+            vcrtc.startTwoWayWhiteboard(backgroundBitmap, true, true);
+        }
+    }
+
+    public void joinBoard() {
+        if (whiteBoardUtil.getWhiteBoardview() != null) {
+            whiteBoardUtil.showWhiteView();
+            handleDisplay(false);
+        } else {
+            joinWhitBoardTools();
+        }
+    }
+
+    public void joinWhitBoardTools() {
+        calculateSize();
+        WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+        whiteBoardUtil.joinWhiteBoardView(whiteBoardView);
+        whiteBoardView.setOnClickListener(v -> {
+            if (isShowBar) {
+                hideBar();
+            } else {
+                showBar();
+            }
+        });
+        vcrtc.joinWhiteboard(objects -> {
+            whiteBoardView.initByPayloads((Map<Integer, WhiteboardPayload>) objects[0]);
+            whiteBoardUtil.resetPosition();
+            whiteBoardUtil.addWhiteBoardView((int) whiteWidth, (int) whiteHeight);
+            handleDisplay(false);
+        });
+    }
+
+    public void startWhiteBoardTools(boolean alreadySuccess) {
+        calculateSize();
+        if (alreadySuccess) {
+            WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+            whiteBoardView.setOnClickListener(v -> {
+                if (isShowBar) {
+                    hideBar();
+                } else {
+                    showBar();
+                }
+            });
+            whiteBoardUtil.setWhiteBoardView(whiteBoardView);
+            whiteBoardUtil.resetPosition();
+            whiteBoardUtil.addWhiteBoardView(whiteWidth, whiteHeight);
+            handleDisplay(false);
+        } else {
+            Bitmap backgroundBitmap = Bitmap.createBitmap((int) whiteWidth, (int) whiteHeight, Bitmap.Config.RGB_565);
+            backgroundBitmap.eraseColor(Color.WHITE);
+            vcrtc.startTwoWayWhiteboard(backgroundBitmap, false, true);
+        }
+    }
+
+    public void handleDisplay(boolean isShow) {
+        llSmallVideo.setVisibility(isShow ? View.VISIBLE : View.GONE);
+        flMarkBackground.setVisibility(!isShow ? View.VISIBLE : View.GONE);
+
+    }
+
+
+    Handler sendHandler = new Handler(Looper.getMainLooper());
+
+    Runnable sendRunnable = () -> {
+        whiteBoardUtil.sendWhiteBoardBitmap(vcrtc);
+    };
+
+    private void sendHandle() {
+        sendHandler.removeCallbacks(sendRunnable);
+        sendHandler.postDelayed(sendRunnable, 300);
+    }
+
+    private void stopWhiteBoard() {
+        if (mActivity != null) {
+            ((ZJConferenceActivity) mActivity).isShowWhite = false;
+            ivShare.setSelected(false);
+            if (!whiteBoardUtil.isJoin()) {
+                vcrtc.stopTwoWayWhiteboard();
+            }
+            whiteBoardUtil.makeFloatVisible(false);
+            if (whiteBoardUtil != null && whiteBoardUtil.getWhiteBoardview() != null) {
+                whiteBoardUtil.resetPosition();
+                whiteBoardUtil.releaseView();
+                whiteBoardUtil.releaseWhiteView();
+            }
+            flMarkBackground.setVisibility(View.GONE);
+        }
+    }
+
+    public void switchMark() {
+        handleDisplay(true);
+        WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+        if (view != null) {
+            view.setBackgroundColor(Color.parseColor("#00000000"));
+            whiteBoardUtil.setMarkBackground(false, null);
+            flMarkBackground.setVisibility(View.GONE);
+        }
+        bigView.setVisibility(View.VISIBLE);
+    }
+
+    public void updateMark() {
+        handleDisplay(false);
+        Bitmap backgroundBitmap = null;
+        if (isPicture) {
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(com.example.alan.sdkdemo.util.BitmapUtil.getImage(imagePathList.get(pictureIndex)), 1920, 1080);
+            ;
+        } else if (isPDF) {
+            Log.d("startWhiteBroad", "startOrJoinMark: isPDF");
+            backgroundBitmap = com.example.alan.sdkdemo.util.BitmapUtil.formatBitmap16_9(pdfBitmap, 1920, 1080);
+        }
+        vcrtc.updateWhiteboardImage(backgroundBitmap);
+        Log.d("startWhiteBroad", "update_bitmap:");
+        WhiteBoardView view = whiteBoardUtil.getWhiteBoardview();
+        if (view != null) {
+            whiteBoardUtil.setMarkBackground(true, backgroundBitmap);
+            flMarkBackground.setVisibility(View.VISIBLE);
+
+        }
+    }
+
+    public void startMark() {
+        startMarkTools(false);
+    }
+
+    public void joinMark() {
+        if (whiteBoardUtil.getWhiteBoardview() != null) {
+            whiteBoardUtil.showWhiteView();
+            whiteBoardUtil.setMarkBackground(true, whiteBoardUtil.getCurrentMarkBitmap());
+            handleDisplay(false);
+            return;
+        }
+        calculateSize();
+        vcrtc.joinWhiteboard(objects -> {
+            WhiteBoardView whiteBoardView = new WhiteBoardView(mActivity, (int) whiteWidth, (int) whiteHeight, Color.BLACK, 5);
+            whiteBoardUtil.joinMarkView(whiteBoardView);
+            whiteBoardView.setOnClickListener(v -> {
+                if (isShowBar) {
+                    hideBar();
+                } else {
+                    showBar();
+                }
+            });
+            flMarkBackground.setVisibility(View.VISIBLE);
+            whiteBoardUtil.setMarkBackground(true, whiteBoardUtil.getCurrentMarkBitmap());
+            whiteBoardView.initByPayloads((Map<Integer, WhiteboardPayload>) objects[0]);
+            whiteBoardUtil.addMarkView((int) whiteWidth, (int) whiteHeight, false);
+            handleDisplay(false);
+        });
+//        bigView.setVisibility(View.GONE);
+    }
 
 }
 
