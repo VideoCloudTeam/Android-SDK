@@ -8,8 +8,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
     <style name="ProcessStyle" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowDisablePreview">true</item>
-<!--        <item name="android:windowBackground">@drawable/join</item>-->
+<!--        <item name="android:windowDisablePreview">true</item>-->
+        <item name="android:windowBackground">@drawable/conference_preview</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="ConferenceStyle" parent="Theme.Design.Light.NoActionBar">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
