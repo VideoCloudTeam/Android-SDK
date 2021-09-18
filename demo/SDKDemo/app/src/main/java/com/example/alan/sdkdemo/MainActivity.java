@@ -125,9 +125,6 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     Toast.makeText(MainActivity.this, "先登录", Toast.LENGTH_SHORT).show();
                 }
-
-
-
                 break;
             default:
         }

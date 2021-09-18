@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme"
+        android:largeHeap="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".contact.ContactActivity"></activity>
         <activity android:name=".ui.CallIncomingActivity" />
