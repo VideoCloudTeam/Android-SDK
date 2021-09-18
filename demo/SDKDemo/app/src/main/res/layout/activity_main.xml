@@ -20,7 +20,7 @@
             android:gravity="center"/>
         <EditText
             android:id="@+id/tv_address"
-            android:text="cs.zijingcloud.com"
+            android:text="172.16.0.221"
             android:layout_width="0dp"
             android:gravity="center"
             android:layout_height="match_parent"
@@ -61,7 +61,7 @@
         <EditText
             android:id="@+id/et_meet_num"
             android:layout_width="0dp"
-            android:text="1865"
+            android:text="8006738"
             android:layout_height="match_parent"
             android:layout_weight="3"/>
     </LinearLayout>
@@ -78,7 +78,7 @@
             android:textSize="16sp"
             android:gravity="center"/>
         <EditText
-            android:text="123456"
+            android:text="1234"
             android:id="@+id/et_password"
             android:layout_width="0dp"
             android:layout_height="match_parent"
