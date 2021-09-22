@@ -1,5 +1,6 @@
 package com.example.alan.sdkdemo.util;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -31,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -356,10 +358,12 @@ public class BitmapUtil {
         Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//把ByteArrayInputStream数据生成图片
         return bitmap;
     }
+
+
     private static void saveSignImage(Context context, Bitmap bitmap, String name) {
 //        ContentValues contentValues = new ContentValues();
-//        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, name);
-//        contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/");
+//        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+//        contentValues.put(MediaStore.MediaColum, "DCIM/");
 //        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/JPEG");
 //        Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 //        if (uri != null) {

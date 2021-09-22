@@ -1,14 +1,20 @@
 package com.example.alan.sdkdemo.util
 
+import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
+import com.bumptech.glide.Glide
 import com.example.alan.sdkdemo.R
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity
 import com.vcrtc.VCRTC
@@ -546,7 +552,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
             if (isMark) {
                 ivMarkBackground.visibility = View.VISIBLE
                 if (bitmap != null && !bitmap.isRecycled) {
-                    ivMarkBackground.setImageBitmap(bitmap)
+                    Glide.with(myContext).asBitmap().load(bitmap).into(ivMarkBackground)
                 }
             }
         } else {
@@ -622,4 +628,5 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
             sendWhiteBoardBitmap(vcrtc)
         }
     }
+
 }

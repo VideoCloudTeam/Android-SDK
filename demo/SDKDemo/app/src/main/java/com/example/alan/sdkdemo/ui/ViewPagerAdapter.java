@@ -7,10 +7,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import com.example.alan.sdkdemo.util.BitmapUtil;
 import com.example.alan.sdkdemo.widget.ZoomImageView;
 import com.example.alan.sdkdemo.widget.ZoomViewPager;
-import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.webrtc.RTCManager;
 
 import java.io.FileInputStream;
@@ -26,10 +27,13 @@ public class ViewPagerAdapter extends PagerAdapter {
     private Context context;
     private List<String> imagePaths;
     private ZoomViewPager pager;
+    ViewGroup.LayoutParams params;
 
     public ViewPagerAdapter(Context context, List imagePaths) {
         this.context = context;
         this.imagePaths = imagePaths;
+        params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
     }
 
 //    public ViewPagerAdapter(Context context, List imagePaths, ZoomViewPager pager) {
@@ -51,40 +55,25 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
-        ZoomImageView iv = new ZoomImageView(container.getContext(), null);
-
+//        ZoomImageView iv = new ZoomImageView(container.getContext(), null);
+        ImageView iv = new ImageView(container.getContext());
         if (onItemImageListener != null) {
-            iv.setOnClickListener(() -> onItemImageListener.onClick());
-            iv.setOnCutListener(bitmap -> onItemImageListener.onCutBitmap(bitmap));
+            iv.setOnClickListener((view) -> onItemImageListener.onClick());
+//            iv.setOnCutListener(bitmap -> onItemImageListener.onCutBitmap(bitmap));
         }
 
         Bitmap bitmap;
         if (RTCManager.isIsShitongPlatform()) {
-            bitmap = BitmapUtil.formatBitmap16_9(imagePaths.get(position), 1920, 1080);
+            bitmap = com.example.alan.sdkdemo.util.BitmapUtil
+                    .formatBitmap16_9(com.example.alan.sdkdemo.util.BitmapUtil
+                            .getImage(imagePaths.get(position)), 1920, 1080);
         } else {
-            FileInputStream fis = null;
-
-            try {
-                fis = new FileInputStream(imagePaths.get(position));
-            } catch (FileNotFoundException var17) {
-                var17.printStackTrace();
-            }
-
-            bitmap = BitmapFactory.decodeStream(fis);
-
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            bitmap = BitmapUtil.getImage(imagePaths.get(position));
         }
-
+        iv.setScaleType(ImageView.ScaleType.CENTER);
         iv.setImageBitmap(bitmap);
-
         // 添加到ViewPager容器
-        container.addView(iv);
+        container.addView(iv, params);
 
         // 返回填充的View对象
         return iv;
@@ -92,7 +81,7 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-        ((ZoomImageView)object).reset();
+        ((ZoomImageView) object).reset();
         container.removeView((View) object);
     }
 
@@ -104,6 +93,7 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     public interface OnItemImageListener {
         void onClick();
+
         void onCutBitmap(Bitmap bitmap);
     }
 }

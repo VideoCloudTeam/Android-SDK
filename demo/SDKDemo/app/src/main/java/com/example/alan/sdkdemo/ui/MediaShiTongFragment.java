@@ -66,6 +66,7 @@ import com.vcrtc.listeners.DoubleClickListener;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.PDFUtil;
 import com.vcrtc.utils.VCUtil;
+import com.vcrtc.webrtc.RTCManager;
 import com.vcrtc.widget.WhiteBoardView;
 
 import org.webrtc.Camera1Enumerator;
@@ -1000,6 +1001,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         });
 
         tvShareScreen.setOnClickListener(v -> {
+            RTCManager.getInstance().setActivityContext(getActivity());
             vcrtc.sendPresentationScreen();
             popupWindowShare.dismiss();
         });

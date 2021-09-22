@@ -1105,13 +1105,28 @@ public class MediaSimulcastFragment extends Fragment implements View.OnClickList
      * 停止双流
      */
     private void stopPresentation() {
+        isPDF = false;
+        isPicture = false;
         vcrtc.stopPresentation();
         vcrtc.updateClayout("1:4");
         ivPicture.reset();
         ivPicture.setVisibility(View.GONE);
         vpShare.setVisibility(View.GONE);
         rlShareScreen.setVisibility(View.GONE);
+        releaseMap();
+        whiteBoardUtil.makeFloatVisible(false);
     }
+
+    private void releaseMap() {
+        for (Bitmap value : pictureMap.values()) {
+            if (value != null && !value.isRecycled()) {
+                value.recycle();
+            }
+        }
+        pictureMap.clear();
+        System.gc();
+    }
+
     private PDFUtil pdfUtil;
     private Bitmap pdfBitmap;
     private boolean isPDF = false, isPicture = false;
