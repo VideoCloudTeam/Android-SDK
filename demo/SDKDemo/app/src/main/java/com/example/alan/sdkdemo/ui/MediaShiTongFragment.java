@@ -938,7 +938,6 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             stopWhiteBoard();
             stopPresentation();
             ivShare.setSelected(false);
-            isShare = false;
             isShareScreen = false;
             if (!isMuteVideo) {
                 vcrtc.setVideoEnable(true, true);
@@ -1204,6 +1203,12 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
                     }
                 });
                 vpShare.setAdapter(viewPagerAdapter);
+            } else {
+                setUnStick();
+                rlShareScreen.setVisibility(View.GONE);
+                // 收到其他人的双流
+                ivShare.setSelected(false);
+                vpShare.setVisibility(View.GONE);
             }
         } else {
             ivShare.setSelected(false);
@@ -1237,6 +1242,8 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      * 停止双流
      */
     private void stopPresentation() {
+        isPicture = false;
+        isPDF = false;
         try {
             vcrtc.stopPresentation();
         } catch (Exception e) {
@@ -1244,6 +1251,18 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         vcrtc.updateClayout("1:4");
         vpShare.setVisibility(View.GONE);
         rlShareScreen.setVisibility(View.GONE);
+        releaseMap();
+        isShare = false;
+    }
+
+    private void releaseMap() {
+        for (Bitmap value : pictureMap.values()) {
+            if (value != null && !value.isRecycled()) {
+                value.recycle();
+            }
+        }
+        pictureMap.clear();
+        System.gc();
     }
 
     /**
@@ -1882,7 +1901,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             isPresentation = isActive;
             sortPeopels();
             if (isActive) {
-                startPresentation();
+//                startPresentation();
                 if (isShare && !uuid.equals(me.getUuid())) {
                     showToast(getString(R.string.sharing_screen_interrupted));
                     imagePathList.clear();
@@ -1896,6 +1915,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
             } else {
                 if (!isShare) {
                     stopPresentation();
+                    vcrtc.stopReceivePresentation();
                 }
             }
         }
