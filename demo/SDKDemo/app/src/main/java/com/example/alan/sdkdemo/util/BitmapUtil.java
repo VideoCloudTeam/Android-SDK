@@ -41,7 +41,7 @@ import java.util.List;
  * 2020/1/9.
  */
 public class BitmapUtil {
-    private Context context;
+    private final Context context;
 
     public BitmapUtil(Context context) {
         this.context = context;
@@ -305,15 +305,12 @@ public class BitmapUtil {
     }
 
 
-
     /**
      * 压缩图片
      *
-     * @param bitmap
-     *          被压缩的图片
-     *          大小限制
-     * @return
-     *          压缩后的图片
+     * @param bitmap 被压缩的图片
+     *               大小限制
+     * @return 压缩后的图片
      */
     public static Bitmap compressBitmap(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -323,7 +320,7 @@ public class BitmapUtil {
         Log.d("bitmapUtils", "pre: " + size);
         Log.d("bitmapUtils", "pre bitmap: " + bitmap.getByteCount());
         // 循环判断压缩后图片是否超过限制大小
-        while(baos.toByteArray().length > size) {
+        while (baos.toByteArray().length > size) {
             // 清空baos
             baos.reset();
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
@@ -344,7 +341,7 @@ public class BitmapUtil {
     public static Bitmap compressImage(Bitmap image) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Bitmap.CompressFormat Type= Bitmap.CompressFormat.WEBP;
+        Bitmap.CompressFormat Type = Bitmap.CompressFormat.WEBP;
         //image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         image.compress(Type, 30, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
 //        int options = 70;
@@ -361,28 +358,27 @@ public class BitmapUtil {
 
 
     private static void saveSignImage(Context context, Bitmap bitmap, String name) {
-//        ContentValues contentValues = new ContentValues();
-//        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-//        contentValues.put(MediaStore.MediaColum, "DCIM/");
-//        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/JPEG");
-//        Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-//        if (uri != null) {
-//            //若生成了uri，则表示该文件添加成功
-//            //使用流将内容写入该uri中即可
-//            try {
-//                OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
-//                if (outputStream != null) {
-//                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
-//
-//                    outputStream.flush();
-//                    outputStream.close();
-//
-//
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        contentValues.put("relative_path", "DCIM/");
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/JPEG");
+
+        Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        if (uri != null) {
+            //若生成了uri，则表示该文件添加成功
+            //使用流将内容写入该uri中即可
+            try {
+                OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
+                if (outputStream != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+
+                    outputStream.flush();
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static void saveBitmapInDCIM(Context context, Bitmap bitmap, String name) {
@@ -399,26 +395,22 @@ public class BitmapUtil {
             fileName = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/" + name;
         }
 
-        if (Build.VERSION.SDK_INT > 29) {
-            saveSignImage(context, bitmap, name);
-        } else {
-            file = new File(fileName);
-            if (file.exists()) {
-                file.delete();
+        file = new File(fileName);
+        if (file.exists()) {
+            file.delete();
+        }
+        FileOutputStream out;
+        try {
+            out = new FileOutputStream(file);
+            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) {
+                out.flush();
+                out.close();
+                MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), name, null);
+                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + fileName)));
+                ((ZJConferenceActivity) context).showToast("已保存到系统相册", Toast.LENGTH_SHORT);
             }
-            FileOutputStream out;
-            try {
-                out = new FileOutputStream(file);
-                if (bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) {
-                    out.flush();
-                    out.close();
-                    MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), name, null);
-                    context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + fileName)));
-                    ((ZJConferenceActivity)context).showToast("已保存到系统相册", Toast.LENGTH_SHORT);
-                }
-            } catch (IOException e) {
-                ((ZJConferenceActivity)context).showToast("保存失败", Toast.LENGTH_SHORT);
-            }
+        } catch (IOException e) {
+            ((ZJConferenceActivity) context).showToast("保存失败", Toast.LENGTH_SHORT);
         }
 
     }
@@ -449,9 +441,9 @@ public class BitmapUtil {
         Bitmap tempBitmap;
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
         tempBitmap = BitmapFactory.decodeFile(srcPath, newOpts);
-        if (degree != 0){
+        if (degree != 0) {
             bitmap = PhotoRotationUtil.rotatingImageView(degree, tempBitmap);
-        }else {
+        } else {
             bitmap = tempBitmap;
         }
         return compressImage(bitmap);//压缩好比例大小后再进行质量压缩

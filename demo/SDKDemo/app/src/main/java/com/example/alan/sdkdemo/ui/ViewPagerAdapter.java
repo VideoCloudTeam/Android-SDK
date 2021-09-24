@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.example.alan.sdkdemo.util.BitmapUtil;
 import com.example.alan.sdkdemo.widget.ZoomImageView;
 import com.example.alan.sdkdemo.widget.ZoomViewPager;
@@ -71,7 +72,9 @@ public class ViewPagerAdapter extends PagerAdapter {
             bitmap = BitmapUtil.getImage(imagePaths.get(position));
         }
         iv.setScaleType(ImageView.ScaleType.CENTER);
-        iv.setImageBitmap(bitmap);
+        Glide.with(context).load(bitmap).into(iv);
+
+//        iv.setImageBitmap(bitmap);
         // 添加到ViewPager容器
         container.addView(iv, params);
 
@@ -81,7 +84,7 @@ public class ViewPagerAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-        ((ZoomImageView) object).reset();
+//        ((ZoomImageView) object).reset();
         container.removeView((View) object);
     }
 
