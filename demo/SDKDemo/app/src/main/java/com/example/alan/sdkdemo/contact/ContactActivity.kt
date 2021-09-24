@@ -3,6 +3,7 @@ package com.example.alan.sdkdemo.contact
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -79,4 +80,15 @@ class ContactActivity : AppCompatActivity(), View.OnClickListener {
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
     }
+
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount == 1){
+            finish()
+        }else{
+            super.onBackPressed()
+        }
+        Log.d("onBackPressed", "size: ${supportFragmentManager.backStackEntryCount}: ")
+    }
+
 }
