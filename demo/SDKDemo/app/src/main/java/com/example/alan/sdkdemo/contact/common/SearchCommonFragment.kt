@@ -60,14 +60,9 @@ class SearchCommonFragment : Fragment() , ItemClick{
             }
             handled
         }
-
-
-
-
-
-
         return rootView
     }
+
 
 
 

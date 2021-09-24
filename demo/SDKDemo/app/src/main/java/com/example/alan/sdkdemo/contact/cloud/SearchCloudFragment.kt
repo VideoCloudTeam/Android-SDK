@@ -54,12 +54,14 @@ class SearchCloudFragment : Fragment() , ItemClick{
                     try {
                         val responseBody = fetchSearchPeopleAsync(editSearch.text.toString()).await()
                         val hasPeople = parseBodyAsync(responseBody).await()
-                        if (hasPeople){
+                        if (hasPeople) {
                             val responseDetail = fetchSearchDetailAsync().await()
                             parseDetail(responseDetail)
+                            refreshUI()
                         }
+
                     } catch (e: Exception) {
-                        withContext(Dispatchers.Main){
+                        withContext(Dispatchers.Main) {
                             Toast.makeText(activity, e.message, Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -68,12 +70,11 @@ class SearchCloudFragment : Fragment() , ItemClick{
             handled
         }
 
-
-
-
-
-
         return rootView
+    }
+
+    private suspend fun refreshUI() = withContext(Dispatchers.Main){
+        adapter?.notifyDataSetChanged()
     }
 
     private fun initRecycler() {
