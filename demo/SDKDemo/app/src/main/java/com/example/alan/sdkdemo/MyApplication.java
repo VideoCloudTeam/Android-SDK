@@ -46,6 +46,8 @@ public class MyApplication extends Application {
 //        prefs.setCameraVideoSize(1920, 1080);
 //        prefs.setRtspEncoder(true);
 //        prefs.setRtspURL("");
+        prefs.setEnableH265Encoder(true);
+        prefs.setEnableH265Decoder(true);
         OkHttpUtil.setApplicationContext(this);
         if (isAppMainProcess()){
             SPUtil.Companion.instance(getApplicationContext()).setLogin(false);

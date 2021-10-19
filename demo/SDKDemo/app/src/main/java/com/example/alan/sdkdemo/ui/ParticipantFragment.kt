@@ -236,10 +236,10 @@ class ParticipantFragment : Fragment(), ZJConferenceActivity.ConferenceCallBack,
                 popupWindow.dismiss()
             }
         } else {
-            tvRemove.visibility = View.GONE
-            view.findViewById<View>(R.id.line1).visibility = View.GONE
-            view.findViewById<View>(R.id.line2).visibility = View.GONE
-            tvSetRole.visibility = View.GONE
+            tvRemove?.visibility = View.GONE
+            view.findViewById<View>(R.id.line1)?.visibility = View.GONE
+            view.findViewById<View>(R.id.line2)?.visibility = View.GONE
+            tvSetRole?.visibility = View.GONE
         }
 
         llReleaseMute.visibility = View.VISIBLE

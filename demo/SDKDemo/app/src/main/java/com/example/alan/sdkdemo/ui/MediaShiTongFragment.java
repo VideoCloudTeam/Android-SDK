@@ -935,6 +935,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
      */
     public void toggleShare() {
         if (isShare) {
+            llSmallVideo.setVisibility(View.VISIBLE);
             imagePathList.clear();
             stopWhiteBoard();
             stopPresentation();
@@ -1568,6 +1569,9 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
     }
 
     public void handleDisplay(boolean isShow) {
+//        if (!isShow){
+//            llSmallVideo.removeAllViews();
+//        }
         llSmallVideo.setVisibility(isShow ? View.VISIBLE : View.GONE);
         flMarkBackground.setVisibility(!isShow ? View.VISIBLE : View.GONE);
 
@@ -1766,6 +1770,7 @@ public class MediaShiTongFragment extends Fragment implements View.OnClickListen
         @Override
         public void onAddView(String uuid, VCRTCView view, String viewType) {
             if (viewType.equals("video") && peoples.containsKey(uuid)) {
+
                 view.setZOrder(1);
                 view.setObjectFit("contain");
                 View peopleView = peoples.get(uuid).getPeopleView();

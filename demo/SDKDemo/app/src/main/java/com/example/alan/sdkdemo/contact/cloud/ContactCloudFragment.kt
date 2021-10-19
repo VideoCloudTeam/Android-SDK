@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewStub
 import android.widget.TextView
 import android.widget.Toast
 import com.example.alan.sdkdemo.R
@@ -34,6 +35,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
     private var adapter: ContactAdapter? = null
     private var departmentId: String? = null
     private var scheduledExecutor: ScheduledExecutorService? = null
+    private lateinit var viewStub: ViewStub
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -50,6 +52,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
         rootView.findViewById<TextView>(R.id.search_edit).setOnClickListener {
             (activity as ContactActivity).showContactSearch()
         }
+        viewStub = rootView.findViewById(R.id.view_stub)
         initRecycleView(rootView)
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -86,6 +89,7 @@ class ContactCloudFragment : Fragment(), ItemClick {
 
     private suspend fun handleView() = withContext(Dispatchers.Main) {
         adapter?.notifyDataSetChanged()
+        viewStub.visibility = if (mContactList.isEmpty()) {View.VISIBLE}else{View.GONE}
         scheduledExecutor?.scheduleAtFixedRate(runnable, 0, 10000, TimeUnit.MILLISECONDS)
     }
 

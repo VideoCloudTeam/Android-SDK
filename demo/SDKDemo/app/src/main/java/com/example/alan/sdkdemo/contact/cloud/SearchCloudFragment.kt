@@ -8,6 +8,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewStub
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
@@ -20,7 +21,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
-class SearchCloudFragment : Fragment() , ItemClick{
+class SearchCloudFragment : Fragment(), ItemClick {
     private lateinit var recyclerView: RecyclerView
     private lateinit var editSearch: EditText
     private var url: String? = null
@@ -28,6 +29,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
     private val contactBeanList = mutableListOf<ContactBean>()
     private val peopleList = mutableListOf<ContactBean>()
     private var adapter: ContactAdapter? = null
+    private lateinit var viewStub: ViewStub
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +45,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
 
         recyclerView = rootView.findViewById(R.id.recyclerView)
         editSearch = rootView.findViewById(R.id.search_edit)
+        viewStub = rootView.findViewById(R.id.view_stub)
         initRecycler()
         SoftKeyboardUtil.forceOpenSoftKeyboard(activity, editSearch)
         editSearch.setOnEditorActionListener { _, actionId, _ ->
@@ -57,8 +60,9 @@ class SearchCloudFragment : Fragment() , ItemClick{
                         if (hasPeople) {
                             val responseDetail = fetchSearchDetailAsync().await()
                             parseDetail(responseDetail)
-                            refreshUI()
                         }
+                        refreshUI()
+
 
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
@@ -73,8 +77,11 @@ class SearchCloudFragment : Fragment() , ItemClick{
         return rootView
     }
 
-    private suspend fun refreshUI() = withContext(Dispatchers.Main){
+    private suspend fun refreshUI() = withContext(Dispatchers.Main) {
         adapter?.notifyDataSetChanged()
+        viewStub.visibility = if (contactBeanList.isEmpty()) {View.VISIBLE}else{View.GONE}
+
+
     }
 
     private fun initRecycler() {
@@ -99,16 +106,16 @@ class SearchCloudFragment : Fragment() , ItemClick{
 
     }
 
-    private fun parseBodyAsync(responseBody: String) : Deferred<Boolean>{
+    private fun parseBodyAsync(responseBody: String): Deferred<Boolean> {
         val json = JSONObject(responseBody)
         val array = json.optJSONArray("usr_ids")
         userIdList = getIdList(array)
-        return if (userIdList.size == 0){
-            GlobalScope.launch(Dispatchers.Main){
-                Toast.makeText(activity, "查无此人", Toast.LENGTH_SHORT).show()
+        return if (userIdList.size == 0) {
+            GlobalScope.launch(Dispatchers.Main) {
+//                Toast.makeText(activity, "查无此人", Toast.LENGTH_SHORT).show()
             }
             CompletableDeferred(false)
-        }else{
+        } else {
             CompletableDeferred(true)
         }
 
@@ -134,7 +141,7 @@ class SearchCloudFragment : Fragment() , ItemClick{
         return CompletableDeferred(responseBody)
     }
 
-    private suspend fun fetchSearchDetailAsync(): Deferred<String>{
+    private suspend fun fetchSearchDetailAsync(): Deferred<String> {
         val requestUrl = url + SPUtil.instance(activity!!).getSessionId() + "/usrs/usr_ids/"
         val body = JSONObject()
         val typeArray = JSONArray()

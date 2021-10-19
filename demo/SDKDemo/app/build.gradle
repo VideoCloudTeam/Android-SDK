@@ -60,7 +60,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
     implementation 'com.github.barteksc:pdfium-android:1.7.0'
-    implementation(name: 'vcrtc-release', ext: 'aar')
+//    implementation(name: 'vcrtc-release', ext: 'aar')
+    implementation(name: 'vcrtc-debug', ext: 'aar')
     implementation files('libs/nineoldandroids-2.4.0.jar')
     implementation 'com.jakewharton:butterknife:9.0.0-rc2'
     annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc2'
