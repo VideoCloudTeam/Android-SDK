@@ -42,12 +42,12 @@ public class MyApplication extends Application {
 //        prefs.setCameraVideoFps(30);
 //        prefs.setVideoFps(30);
 //        prefs.setMaxVideoFps(30);
-//        prefs.setDisableFrameDropper(true);
+        prefs.setDisableFrameDropper(true);
 //        prefs.setCameraVideoSize(1920, 1080);
 //        prefs.setRtspEncoder(true);
 //        prefs.setRtspURL("");
-        prefs.setEnableH265Encoder(true);
-        prefs.setEnableH265Decoder(true);
+//        prefs.setEnableH265Encoder(true);
+//        prefs.setEnableH265Decoder(false);
         OkHttpUtil.setApplicationContext(this);
         if (isAppMainProcess()){
             SPUtil.Companion.instance(getApplicationContext()).setLogin(false);
