@@ -2,8 +2,6 @@ package com.example.alan.sdkdemo.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
-import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +14,8 @@ import com.vcrtc.utils.PDFUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.viewpager.widget.PagerAdapter;
+
 public class PDFAdapter extends PagerAdapter {
 
     private Context context;
@@ -25,7 +25,6 @@ public class PDFAdapter extends PagerAdapter {
     private int size;
     private Bitmap firstBitmap;
     private List<ImageView> zoomImageViews;
-
 
     public PDFAdapter(Context context, List imagePaths) {
         this.context = context;
@@ -49,7 +48,7 @@ public class PDFAdapter extends PagerAdapter {
     }
 
     @Override
-    public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+    public boolean isViewFromObject(View view, Object object) {
         return view == object;
     }
 
@@ -87,7 +86,7 @@ public class PDFAdapter extends PagerAdapter {
     }
 
     @Override
-    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+    public void destroyItem(ViewGroup container, int position, Object object) {
         ((PhotoView)object).setScale(1);
         container.removeView((View) object);
     }

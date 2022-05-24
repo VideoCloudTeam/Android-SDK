@@ -2,27 +2,19 @@ package com.example.alan.sdkdemo.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
-import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.alan.sdkdemo.util.BitmapUtil;
-import com.example.alan.sdkdemo.widget.ZoomImageView;
 import com.example.alan.sdkdemo.widget.ZoomViewPager;
 import com.vcrtc.webrtc.RTCManager;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
 
-/**
- * @author ricardo
- */
+import androidx.viewpager.widget.PagerAdapter;
+
 public class ViewPagerAdapter extends PagerAdapter {
 
     private Context context;
@@ -50,7 +42,7 @@ public class ViewPagerAdapter extends PagerAdapter {
     }
 
     @Override
-    public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+    public boolean isViewFromObject(View view, Object object) {
         return view == object;
     }
 
@@ -83,7 +75,7 @@ public class ViewPagerAdapter extends PagerAdapter {
     }
 
     @Override
-    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+    public void destroyItem(ViewGroup container, int position, Object object) {
 //        ((ZoomImageView) object).reset();
         container.removeView((View) object);
     }

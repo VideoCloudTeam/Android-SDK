@@ -8,17 +8,11 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.json.JSONObject
-import org.w3c.dom.Text
 import java.io.IOException
-import java.lang.Exception
 import java.lang.IllegalStateException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-/**
- * Created by ricardo
- * 8/30/21.
- */
 class HttpUtil {
     companion object{
         suspend fun doPostAsync(url: String, params: String, header: Map<String, String>?): Deferred<String> {
@@ -64,7 +58,4 @@ class HttpUtil {
             }
         }
     }
-
-
-
 }

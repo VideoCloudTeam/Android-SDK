@@ -1,15 +1,10 @@
 package com.example.alan.sdkdemo.util
 
-import android.content.ContentValues
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.os.Build
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -20,16 +15,11 @@ import com.example.alan.sdkdemo.ui.ZJConferenceActivity
 import com.vcrtc.VCRTC
 import com.vcrtc.callbacks.VCCallback
 import com.vcrtc.entities.WhiteboardPayload
-import com.vcrtc.webrtc.RTCManager
 import com.vcrtc.widget.WhiteBoardView
 import com.vcrtc.widget.WhiteBoardView.BitmapCallBack
 import com.vcrtc.widget.WhiteBoardView.DataCallBack
 import java.util.*
 
-/**
- * Created by ricardo
- * 9/13/21.
- */
 class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
     var isJoin = false
     var isMark = true
@@ -80,7 +70,7 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
     private val WIDTH = 1
     private val TOOLS = 2
 
-    public fun initWhiteBoardView(rootView: View) {
+    fun initWhiteBoardView(rootView: View) {
         rootView.apply {
             rlWhiteParent = findViewById(R.id.fl_white_content)
             llTools = findViewById(R.id.ll_tools)
@@ -128,8 +118,6 @@ class WhiteBoardUtil(val vcrtc: VCRTC, val myContext: ZJConferenceActivity) {
             ivRegular.isSelected = true
             ivBlack.isSelected = true
         }
-
-
     }
 
     private val whiteToolsListener = View.OnClickListener {

@@ -1,21 +1,16 @@
 package com.example.alan.sdkdemo.ui
 
 import android.content.Context
-import android.media.Image
-import android.support.constraint.ConstraintLayout
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.example.alan.sdkdemo.R
 import com.vcrtc.entities.Participant
 
-/**
- * Created by ricardo
- * 9/6/21.
- */
 class ParticipantAdapter(private val dataList: MutableList<Participant>, val context: Context, val onItemListener: OnParticipantItemListener) : RecyclerView.Adapter<ParticipantAdapter.ViewHolder>() {
 
 
@@ -50,15 +45,11 @@ class ParticipantAdapter(private val dataList: MutableList<Participant>, val con
         notifyDataSetChanged()
     }
 
-
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
         val ivHead: ImageView = view.findViewById(R.id.iv_head)
         val tvName: TextView = view.findViewById(R.id.tv_name)
         val tvIdentity: TextView = view.findViewById(R.id.iv_identity)
         val itemView: ConstraintLayout = view.findViewById(R.id.item_view)
         val ivAudioStatus: ImageView = view.findViewById(R.id.iv_audio_status)
-
-
     }
 }

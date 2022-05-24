@@ -3,10 +3,6 @@ package com.example.alan.sdkdemo.util;
 import android.content.Context;
 import android.util.DisplayMetrics;
 
-/**
- * Created by ricardo
- * 2019/9/10.
- */
 public class DensityUtil {
     public static float RATIO = 0.95F;//缩放比例值
 

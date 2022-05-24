@@ -7,14 +7,7 @@ import android.media.ExifInterface;
 
 import java.io.IOException;
 
-/**
- * Created by ricardo
- * 1/6/21.
- */
-
 public class PhotoRotationUtil {
-
-
 
     /**
      * 获取图片旋转角度

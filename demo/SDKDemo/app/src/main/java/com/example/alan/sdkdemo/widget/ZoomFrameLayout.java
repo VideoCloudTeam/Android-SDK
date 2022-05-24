@@ -1,7 +1,6 @@
 package com.example.alan.sdkdemo.widget;
 
 import android.content.Context;
-import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -9,6 +8,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.nineoldandroids.view.ViewHelper;
+
+import androidx.customview.widget.ViewDragHelper;
 
 public class ZoomFrameLayout extends FrameLayout {
 

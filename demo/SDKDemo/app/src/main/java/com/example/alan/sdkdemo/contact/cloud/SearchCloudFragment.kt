@@ -1,9 +1,6 @@
 package com.example.alan.sdkdemo.contact.cloud
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +9,9 @@ import android.view.ViewStub
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.alan.sdkdemo.R
 import com.example.alan.sdkdemo.contact.*
 import com.example.alan.sdkdemo.util.SoftKeyboardUtil

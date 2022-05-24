@@ -2,12 +2,13 @@ package com.example.alan.sdkdemo.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.v4.app.Fragment;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.huantansheng.easyphotos.EasyPhotos;
 import com.huantansheng.easyphotos.engine.ImageEngine;
+
+import androidx.fragment.app.Fragment;
 
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
@@ -42,8 +43,6 @@ public class GlideEngine implements ImageEngine {
                 .setCount(9)
                 .start(REQUEST_CODE);
     }
-
-
 
     @Override
     public void loadPhoto(Context context, String photoPath, ImageView imageView) {

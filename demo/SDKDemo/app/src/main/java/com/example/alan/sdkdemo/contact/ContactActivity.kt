@@ -1,12 +1,12 @@
 package com.example.alan.sdkdemo.contact
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.example.alan.sdkdemo.R
 import com.example.alan.sdkdemo.contact.cloud.ContactCloudFragment
 import com.example.alan.sdkdemo.contact.cloud.ContactDetailFragment

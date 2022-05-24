@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Process;
-import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 
 import com.example.alan.sdkdemo.contact.SPUtil;
@@ -18,19 +16,15 @@ import com.vcrtc.utils.LogUtil;
 import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.webrtc.RTCManager;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-/**
- * Created by ricardo
- * 2019/7/4.
- */
+import androidx.multidex.MultiDex;
+
 public class MyApplication extends Application {
     @Override
     public void onCreate() {
@@ -48,28 +42,23 @@ public class MyApplication extends Application {
 //        prefs.setRtspURL("");
 //        prefs.setEnableH265Encoder(true);
 //        prefs.setEnableH265Decoder(false);
-        OkHttpUtil.setApplicationContext(this);
+        // 设置开发者token和deviceId
+        OkHttpUtil.setDevHeadParams("b6ecdce5-demo-4fc1-957d-b9bda59daf4f", "f1d91d35-demo-468f-a3e0-f7ae9f365841");
         if (isAppMainProcess()){
             SPUtil.Companion.instance(getApplicationContext()).setLogin(false);
             SPUtil.Companion.instance(getApplicationContext()).setModel("");
             SPUtil.Companion.instance(getApplicationContext()).setSessionId("");
             SPUtil.Companion.instance(getApplicationContext()).setCompanyId("");
-            prefs.setNeedSecurityHead(true);
-            // 设置开发者token和deviceId
-            prefs.setDeviceId("b6ecdce5-demo-4fc1-957d-b9bda59daf4f");
-            prefs.setToken("f1d91d35-demo-468f-a3e0-f7ae9f365841");
             //复制关闭摄像头的图片到手机
             copyCloseVideoImageFromRaw(prefs);
-
         }
         prefs.setPrintLogs(true);
-        LogUtil.startWriteLog(this, false);
+        LogUtil.startWriteLog(this, false, BuildConfig.DEBUG);
         SoulPermission.init(this);
         RTCManager.init(this);
         RTCManager.DEVICE_TYPE = "Android";
         RTCManager.OEM = "";
         CrashReport.initCrashReport(getApplicationContext(), "941e592e23", true);
-
 
     }
 

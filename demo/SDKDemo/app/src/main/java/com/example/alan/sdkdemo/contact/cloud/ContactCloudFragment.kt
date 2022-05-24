@@ -1,9 +1,6 @@
 package com.example.alan.sdkdemo.contact.cloud
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +9,9 @@ import android.view.ViewGroup
 import android.view.ViewStub
 import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.alan.sdkdemo.R
 import com.example.alan.sdkdemo.contact.*
 import kotlinx.coroutines.*
@@ -71,8 +71,6 @@ class ContactCloudFragment : Fragment(), ItemClick {
             }
 
         }
-
-
 
         return rootView
     }

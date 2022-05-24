@@ -1,10 +1,6 @@
 package com.example.alan.sdkdemo.ui;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,7 +8,6 @@ import android.widget.TextView;
 
 import com.example.alan.sdkdemo.R;
 import com.example.alan.sdkdemo.receiver.ContentReceiver;
-import com.example.alan.sdkdemo.widget.ZjCall;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.entities.Call;
 import com.vcrtc.entities.IncomingCall;
@@ -22,6 +17,8 @@ import com.vcrtc.utils.VCUtil;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class CallIncomingActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView name;
@@ -59,10 +56,7 @@ public class CallIncomingActivity extends AppCompatActivity implements View.OnCl
             }
         };
         timer.schedule(timerTask, OUT_TIME);
-
     }
-
-
 
     @Override
     public void onClick(View v) {
@@ -86,7 +80,6 @@ public class CallIncomingActivity extends AppCompatActivity implements View.OnCl
         finish();
     }
 
-
     private void decline(IncomingCall inComingCall){
         VCRegistrationUtil.hangup(this, ContentReceiver.HANG_UP);
         finish();
@@ -102,9 +95,6 @@ public class CallIncomingActivity extends AppCompatActivity implements View.OnCl
         call.setNickname(ContentReceiver.accountName);
         call.setCheckDup(VCUtil.MD5(SystemUtil.getMac(this) + call.getNickname()));
         call.setMsgJson(inComingCall.getMsgJson());
-
-
-
         return call;
     }
 

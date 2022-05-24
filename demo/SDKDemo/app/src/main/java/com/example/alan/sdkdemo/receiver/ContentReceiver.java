@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.example.alan.sdkdemo.ui.CallIncomingActivity;
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
-import com.vcrtc.entities.Call;
 import com.vcrtc.entities.IncomingCall;
 import com.vcrtc.registration.VCRegistrationUtil;
 import com.vcrtc.registration.VCService;
@@ -20,12 +19,6 @@ import org.json.JSONObject;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static com.vcrtc.registration.VCService.MSG;
-
-/**
- * Created by ricardo
- * 2019/7/11.
- * @author ricardo
- */
 
 public class ContentReceiver extends BroadcastReceiver {
     public final static int IN_CONFERENCE = 1;
@@ -96,8 +89,6 @@ public class ContentReceiver extends BroadcastReceiver {
         ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
         return cn.getClassName().equals(ZJConferenceActivity.class.getName());
     }
-
-
 
     private void showInComingView(Context context, IncomingCall inComingCall) {
         Bundle b = new Bundle();

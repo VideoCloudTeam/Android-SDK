@@ -12,10 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,10 +35,6 @@ import com.example.alan.sdkdemo.widget.ZoomFrameLayout;
 import com.example.alan.sdkdemo.widget.ZoomImageView;
 import com.huantansheng.easyphotos.EasyPhotos;
 import com.huantansheng.easyphotos.models.album.entity.Photo;
-import com.luck.picture.lib.PictureSelector;
-import com.luck.picture.lib.config.PictureConfig;
-import com.luck.picture.lib.config.PictureMimeType;
-import com.luck.picture.lib.entity.LocalMedia;
 import com.qw.soul.permission.SoulPermission;
 import com.qw.soul.permission.bean.Permission;
 import com.qw.soul.permission.callbcak.CheckRequestPermissionListener;
@@ -57,7 +49,6 @@ import com.vcrtc.entities.WhiteboardPayload;
 import com.vcrtc.utils.BitmapUtil;
 import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.utils.PDFUtil;
-import com.vcrtc.utils.SystemUtil;
 import com.vcrtc.utils.VCUtil;
 
 import java.io.File;
@@ -66,6 +57,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
 
 public class MediaFragment extends Fragment implements View.OnClickListener {
 
@@ -110,9 +105,8 @@ public class MediaFragment extends Fragment implements View.OnClickListener {
     private StatsAdapter adapter;
     private BitmapUtil bitmapUtil;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_media, container, false);
 
         initView();

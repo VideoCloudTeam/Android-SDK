@@ -10,57 +10,34 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alan.sdkdemo.contact.ContactActivity;
 import com.example.alan.sdkdemo.contact.SPUtil;
+import com.example.alan.sdkdemo.databinding.ActivityMainBinding;
 import com.example.alan.sdkdemo.ui.SettingActivity;
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
+import com.example.alan.sdkdemo.util.CheckUtil;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.callbacks.CallBack;
 import com.vcrtc.entities.Call;
-import com.vcrtc.utils.CheckUtils;
-import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.utils.SystemUtil;
 import com.vcrtc.utils.VCUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import okhttp3.Callback;
-import okhttp3.Response;
-
-public class MainActivity extends AppCompatActivity {
-
-    @BindView(R.id.et_nickname)
-    EditText etNickname;
-    @BindView(R.id.et_meet_num)
-    EditText etMeetNum;
-    @BindView(R.id.et_password)
-    EditText etPassword;
-    @BindView(R.id.tv_address)
-    TextView tvAddress;
-    @BindView(R.id.btn_connect)
-    Button btnConnect;
-    @BindView(R.id.btn_setting)
-    Button btnSetting;
+    ActivityMainBinding binding;
     private final int REQUEST_PERMISSION = 1000;
     private final int OVERLAY_PERMISSION_REQ_CODE = 1001;
     private VCRTCPreferences vcPrefs;
@@ -72,12 +49,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         vcPrefs = new VCRTCPreferences(getApplicationContext());
         call = new Call();
         mainHandler = new MainHandler();
         new Handler().postDelayed(this::checkPermission, 1000);
+
+        binding.btnSetting.setOnClickListener(this);
+        binding.btnLogin.setOnClickListener(this);
+        binding.btnConnect.setOnClickListener(this);
+        binding.btnContact.setOnClickListener(this);
     }
 
     @Override
@@ -85,16 +67,11 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    @OnClick(R.id.btn_connect)
-    public void onClick() {
-        checkUrl(tvAddress.getText().toString());
-    }
-
     private void goToConference() {
 
-        call.setNickname(etNickname.getText().toString());
-        call.setChannel(etMeetNum.getText().toString());
-        call.setPassword(etPassword.getText().toString());
+        call.setNickname(binding.etNickname.getText().toString());
+        call.setChannel(binding.etMeetNum.getText().toString());
+        call.setPassword(binding.etPassword.getText().toString());
         call.setCheckDup(VCUtil.MD5(SystemUtil.getMac(this) + call.getNickname()));
         call.setHideMe(false);
         Intent intent = new Intent(this, ZJConferenceActivity.class);
@@ -107,9 +84,12 @@ public class MainActivity extends AppCompatActivity {
         return super.dispatchTouchEvent(ev);
     }
 
-    @OnClick({R.id.btn_setting, R.id.btn_login, R.id.btn_contact})
+    @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btn_connect:
+                checkUrl(binding.tvAddress.getText().toString());
+                break;
             case R.id.btn_setting:
                 Intent intent = new Intent(MainActivity.this, SettingActivity.class);
                 startActivity(intent);
@@ -169,8 +149,7 @@ public class MainActivity extends AppCompatActivity {
      * @param apiServer
      */
     private void loadInfoAndCall(String num, String apiServer) {
-
-        CheckUtils.checkConference(num, apiServer, new CheckUtils.CheckConferenceListener() {
+        CheckUtil.checkConference(num, apiServer, new CheckUtil.CheckConferenceListener() {
             @Override
             public void onSuccess(String s) {
                 Log.d("loadInfoAndCall", "onSuccess: " + s);
@@ -189,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
                 mainHandler.sendMessage(msg);
             }
         });
-
     }
 
 
@@ -204,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     if (statusCode == 200) {
                         String hostPwd = jsonObject.optString("hostpwd");
                         String guestPwd = jsonObject.optString("guestpwd");
-                        if (hostPwd.equals(etPassword.getText().toString()) || guestPwd.equals(etPassword.getText().toString())) {
+                        if (hostPwd.equals(binding.etPassword.getText().toString()) || guestPwd.equals(binding.etPassword.getText().toString())) {
                             goToConference();
                         } else {
                             displayMessage("会议号码或密码错误");
@@ -232,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void success(String s) {
                 mainHandler.post(() -> {
-                    loadInfoAndCall(etMeetNum.getText().toString(), tvAddress.getText().toString());
+                    loadInfoAndCall(binding.etMeetNum.getText().toString(), binding.tvAddress.getText().toString());
                 });
             }
 

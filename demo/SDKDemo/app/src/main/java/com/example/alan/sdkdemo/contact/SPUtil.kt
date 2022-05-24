@@ -3,12 +3,7 @@ package com.example.alan.sdkdemo.contact
 import android.content.Context
 import android.content.SharedPreferences
 
-/**
- * Created by ricardo
- * 8/30/21.
- */
 class SPUtil {
-
 
     companion object{
         private var sp: SharedPreferences? = null
@@ -19,8 +14,6 @@ class SPUtil {
             return SPUtil()
         }
     }
-
-
 
     fun getSessionId(): String {
         return sp?.getString("sessionId", "")!!

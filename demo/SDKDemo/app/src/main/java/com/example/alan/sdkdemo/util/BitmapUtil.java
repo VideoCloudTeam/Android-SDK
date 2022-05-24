@@ -15,11 +15,9 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.alan.sdkdemo.R;
 import com.example.alan.sdkdemo.ui.ZJConferenceActivity;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
@@ -36,10 +34,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ricardo
- * 2020/1/9.
- */
+import androidx.annotation.RequiresApi;
+
 public class BitmapUtil {
     private final Context context;
 
@@ -167,7 +163,7 @@ public class BitmapUtil {
             return null;
         }
         File file = new File(pdfPath);
-//初始化PdfRender
+        //初始化PdfRender
         mDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
         if (mDescriptor != null) {
             mRenderer = new PdfRenderer(mDescriptor);
