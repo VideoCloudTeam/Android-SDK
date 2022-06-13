@@ -13,7 +13,6 @@ import com.qw.soul.permission.SoulPermission;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.vcrtc.VCRTCPreferences;
 import com.vcrtc.utils.LogUtil;
-import com.vcrtc.utils.OkHttpUtil;
 import com.vcrtc.webrtc.RTCManager;
 
 import java.io.File;
@@ -42,18 +41,19 @@ public class MyApplication extends Application {
 //        prefs.setRtspURL("");
 //        prefs.setEnableH265Encoder(true);
 //        prefs.setEnableH265Decoder(false);
-        // 设置开发者token和deviceId
-        OkHttpUtil.setDevHeadParams("b6ecdce5-demo-4fc1-957d-b9bda59daf4f", "f1d91d35-demo-468f-a3e0-f7ae9f365841");
         if (isAppMainProcess()){
             SPUtil.Companion.instance(getApplicationContext()).setLogin(false);
             SPUtil.Companion.instance(getApplicationContext()).setModel("");
             SPUtil.Companion.instance(getApplicationContext()).setSessionId("");
             SPUtil.Companion.instance(getApplicationContext()).setCompanyId("");
+            // 设置开发者token和deviceId
+            prefs.setDeviceId("b6ecdce5-demo-4fc1-957d-b9bda59daf4f");
+            prefs.setToken("f1d91d35-demo-468f-a3e0-f7ae9f365841");
             //复制关闭摄像头的图片到手机
             copyCloseVideoImageFromRaw(prefs);
         }
         prefs.setPrintLogs(true);
-        LogUtil.startWriteLog(this, false, BuildConfig.DEBUG);
+        LogUtil.startWriteLog(this, BuildConfig.DEBUG);
         SoulPermission.init(this);
         RTCManager.init(this);
         RTCManager.DEVICE_TYPE = "Android";
